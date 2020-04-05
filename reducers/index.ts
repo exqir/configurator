@@ -1,12 +1,5 @@
 import { generate } from 'shortid'
 
-export const ADD_MODULE_EVENT = 'ADD_MODULE'
-export const CREATE_MODULE_DATA_EVENT = 'CREATE_MODULE_DATA'
-export const ADD_MODULE_DATA_EVENT = 'ADD_MODULE_DATA'
-export const REMOVE_MODULE_DATA_EVENT = 'REMOVE_MODULE_DATA'
-export const UPDATE_MODULE_DATA_EVENT = 'UPDATE_MODULE_DATA'
-export const PUSH_MODULE_DATA_EVENT = 'PUSH_MODULE_DATA'
-
 type ModuleType = 'cart-horizontal' | 'progress-stepper'
 type ModuleStoreAction = {
   type: 'ADD_MODULE' | string
@@ -23,73 +16,58 @@ type ModuleStore = {
   }
 }
 
-export function moduleReducer(
-  prevState: ModuleStore,
-  { type, payload }: ModuleStoreAction,
-): ModuleStore {
-  switch (type) {
-    case ADD_MODULE_EVENT: {
-      const id = `${payload.type}-${generate()}`
-      payload.updateData({
-        type: CREATE_MODULE_DATA_EVENT,
-        payload: { id: `${id}-data` },
-      })
-      return { ...prevState, [id]: { ...payload, id, data: `${id}-data` } }
-    }
-    default:
-      return prevState
-  }
-}
+export const CREATE_DATASET_EVENT = 'CREATE_DATASET'
+export const ADD_DATALINK_EVENT = 'ADD_DATALINK'
+export const REMOVE_DATALINK_EVENT = 'REMOVE_DATALINK'
+export const UPDATE_VALUE_EVENT = 'UPDATE_VALUE'
 
-export function dataReducer(prevState, { type, payload }) {
-  console.log('dataReducer', prevState, type, payload)
+export const generateId = (type: string) => `${type}-${generate()}`
+
+export function reducer(prevState, { type, payload }) {
   switch (type) {
-    case CREATE_MODULE_DATA_EVENT: {
-      const { id: _id, type } = payload
-      const id = _id ?? `${type}-${generate()}`
-      return { ...prevState, [id]: { id } }
-    }
-    case ADD_MODULE_DATA_EVENT: {
-      const { id, key, value } = payload
-      const data = prevState[id]
+    case CREATE_DATASET_EVENT: {
+      const id = `${payload.type}-${generate()}`
       return {
         ...prevState,
         [id]: {
-          ...data,
-          [key]: value,
+          id,
+          type: payload.type,
+          data: [],
         },
       }
     }
-    case REMOVE_MODULE_DATA_EVENT: {
-      const { id, key } = payload
-      const { [key]: removed, ...data } = prevState[id]
+    case ADD_DATALINK_EVENT: {
+      const { parentId, id, value } = payload
+      const dataSet = prevState[parentId]
       return {
         ...prevState,
-        [id]: data,
+        [parentId]: {
+          ...dataSet,
+          data: [...dataSet.data, id],
+        },
+        [id]: { ...value, id },
       }
     }
-    case UPDATE_MODULE_DATA_EVENT: {
-      const { id, key, value } = payload
-      const data = prevState[id]
+    case REMOVE_DATALINK_EVENT: {
+      const { parentId, dataId } = payload
+      const { [dataId]: removed, ...newState } = prevState
+      const parent = prevState[parentId]
       return {
-        ...prevState,
-        [id]: {
-          ...data,
-          [key]: value,
+        ...newState,
+        [parentId]: {
+          ...parent,
+          data: parent.data.filter(link => link !== dataId),
         },
       }
     }
-    case PUSH_MODULE_DATA_EVENT: {
-      const { id, key, value } = payload
-      const data = prevState[id]
-      const dataId = `${key}-${generate()}`
+    case UPDATE_VALUE_EVENT: {
+      const { dataId, value } = payload
       return {
         ...prevState,
-        [id]: {
-          ...data,
-          [key]: [...data[key], dataId],
+        [dataId]: {
+          ...prevState[dataId],
+          value,
         },
-        [dataId]: value,
       }
     }
     default:

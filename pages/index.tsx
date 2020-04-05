@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React, { useReducer, Fragment, useState } from 'react'
+import React, { useReducer } from 'react'
 import {
   ThemeProvider,
   CSSReset,
@@ -9,7 +9,6 @@ import {
   FormLabel,
   Switch,
   Select,
-  IconButton,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -25,16 +24,93 @@ import {
   Divider,
 } from '@chakra-ui/core'
 import { DataProvider, useData } from '../components/DataContext'
+import { AddType } from '../components/AddType'
 import {
-  ADD_MODULE_EVENT,
-  CREATE_MODULE_DATA_EVENT,
-  ADD_MODULE_DATA_EVENT,
-  REMOVE_MODULE_DATA_EVENT,
-  UPDATE_MODULE_DATA_EVENT,
-  PUSH_MODULE_DATA_EVENT,
-  moduleReducer,
-  dataReducer,
+  ADD_DATALINK_EVENT,
+  REMOVE_DATALINK_EVENT,
+  UPDATE_VALUE_EVENT,
+  reducer,
+  generateId,
 } from '../reducers'
+
+function isMergeableObject(val) {
+  var nonNullObject = val && typeof val === 'object'
+
+  return (
+    nonNullObject &&
+    Object.prototype.toString.call(val) !== '[object RegExp]' &&
+    Object.prototype.toString.call(val) !== '[object Date]'
+  )
+}
+
+function emptyTarget(val) {
+  return Array.isArray(val) ? [] : {}
+}
+
+function cloneIfNecessary(value, optionsArgument) {
+  var clone = optionsArgument && optionsArgument.clone === true
+  return clone && isMergeableObject(value)
+    ? deepmerge(emptyTarget(value), value, optionsArgument)
+    : value
+}
+
+function defaultArrayMerge(target, source, optionsArgument) {
+  var destination = target.slice()
+  source.forEach(function(e, i) {
+    if (typeof destination[i] === 'undefined') {
+      destination[i] = cloneIfNecessary(e, optionsArgument)
+    } else if (isMergeableObject(e)) {
+      destination[i] = deepmerge(target[i], e, optionsArgument)
+    } else if (target.indexOf(e) === -1) {
+      destination.push(cloneIfNecessary(e, optionsArgument))
+    }
+  })
+  return destination
+}
+
+function mergeObject(target, source, optionsArgument) {
+  var destination = {}
+  if (isMergeableObject(target)) {
+    Object.keys(target).forEach(function(key) {
+      destination[key] = cloneIfNecessary(target[key], optionsArgument)
+    })
+  }
+  Object.keys(source).forEach(function(key) {
+    if (!isMergeableObject(source[key]) || !target[key]) {
+      destination[key] = cloneIfNecessary(source[key], optionsArgument)
+    } else {
+      destination[key] = deepmerge(target[key], source[key], optionsArgument)
+    }
+  })
+  return destination
+}
+
+function deepmerge(target, source, optionsArgument) {
+  var array = Array.isArray(source)
+  var options = optionsArgument || { arrayMerge: defaultArrayMerge }
+  var arrayMerge = options.arrayMerge || defaultArrayMerge
+
+  if (array) {
+    return Array.isArray(target)
+      ? arrayMerge(target, source, optionsArgument)
+      : cloneIfNecessary(source, optionsArgument)
+  } else {
+    return mergeObject(target, source, optionsArgument)
+  }
+}
+
+deepmerge.all = function deepmergeAll(array, optionsArgument) {
+  if (!Array.isArray(array) || array.length < 2) {
+    throw new Error(
+      'first argument should be an array with at least two elements',
+    )
+  }
+
+  // we are sure there are at least 2 values, so it is safe to have no initial value
+  return array.reduce(function(prev, next) {
+    return deepmerge(prev, next, optionsArgument)
+  })
+}
 
 const modules = {
   'cart-horizontal': {
@@ -93,55 +169,137 @@ const components = {
   },
 }
 
-const AddType = ({ types, onAdd }) => {
-  const [selectedType, setType] = useState(types[0])
-  return (
-    <Stack isInline>
-      <Select
-        value={selectedType}
-        onChange={event => setType(event.target.value)}
-      >
-        {types.map(type => (
-          <option value={type} key={type}>
-            {type}
-          </option>
-        ))}
-      </Select>
-      <IconButton
-        icon="add"
-        aria-label={`Add ${selectedType} module`}
-        onClick={() => onAdd({ type: selectedType })}
-      />
-    </Stack>
-  )
+const config = {
+  modules: {
+    key: 'modules',
+    type: 'root',
+    attributes: ['cart-horizontal', 'progress-stepper'],
+  },
+  'cart-horizontal': {
+    key: 'cart-horizontal',
+    type: 'module',
+    attributes: ['hideHeadlines', 'cartColumns'],
+  },
+  'progress-stepper': {
+    key: 'progress-stepper',
+    type: 'module',
+    attributes: ['activeStep', 'steps'],
+  },
+  activeStep: {
+    key: 'activeStep',
+    type: 'number',
+    value: 0,
+    attributes: [0, 3],
+  },
+  steps: {
+    key: 'steps',
+    type: 'select',
+    value: 'first',
+    attributes: ['first', 'second'],
+  },
+  hideHeadlines: {
+    key: 'hideHeadlines',
+    type: 'checkbox',
+    value: true,
+    attributes: [true, false],
+  },
+  cartColumns: {
+    key: 'cartColumns',
+    type: 'grid',
+    attributes: ['quantity', 'cart_actions'],
+  },
+  quantity: {
+    key: 'quantity',
+    type: 'column',
+    attributes: [
+      'width',
+      'justify',
+      // 'qty_selection_component',
+      'qty_selection',
+    ],
+  },
+  cart_actions: {
+    key: 'cart_actions',
+    type: 'column',
+    attributes: ['width', 'justify'],
+  },
+  width: {
+    key: 'width',
+    type: 'number',
+    value: 1,
+    attributes: [1, 12],
+  },
+  justify: {
+    key: 'justify',
+    type: 'select',
+    value: 'left',
+    attributes: ['left', 'right', 'center'],
+  },
+  // qty_selection_component: {
+  //   key: 'qty_selection_component',
+  //   type: 'select',
+  //   value: 'quantity_stepper',
+  //   attributes: ['quantity_stepper', 'select'],
+  // },
+  // qty_selection: {
+  //   key: 'qty_selection',
+  //   type: 'choosable-component',
+  //   attributes: ['qty_selection_component'],
+  // },
+  qty_selection: {
+    key: 'qty_selection',
+    type: 'component',
+    attributes: ['component_type'],
+  },
+  quantity_stepper: {
+    key: 'quantity_stepper',
+    type: 'component',
+    attributes: ['component_type'],
+  },
+  component_type: {
+    key: 'component_type',
+    type: 'select',
+    value: 'primary',
+    attributes: ['primary', 'secondary', 'success', 'danger'],
+  },
 }
 
-const AttributeSettings = ({ id, dataId, attribute, type, context }) => {
-  console.log('Attribute Settings', { id, dataId, attribute, type, context })
-  const { store, dispatch } = useData()
-  const { type: attributeType, default: defaultValue, values } = context[type][
-    attribute
-  ]
-  const value = store[dataId][attribute] ?? defaultValue
+function getValue({ type, key, value, data }, store) {
+  if (value !== null && value !== undefined) return { [key]: value }
+  if (type === 'grid') {
+    return data.map(id => ({ [key]: getValue(store[id], store) }))
+  }
+  if (type === 'column') {
+    return data.map(id => ({
+      ...getValue(store[id], store),
+      type: store[id].type,
+    }))
+  }
+  return data
+    .map(id => ({ [key]: getValue(store[id], store) }))
+    .reduce((acc, o) => deepmerge(acc, o, undefined), {})
+}
 
-  if (attributeType === 'select') {
+const AttributeSettings = ({ id, store, dispatch }) => {
+  const { type, value, key, attributes, data } = store[id]
+
+  if (type === 'select') {
     return (
       <Select
         id={`${id}-values`}
         name={`${id}-values`}
         onChange={event =>
           dispatch({
-            type: UPDATE_MODULE_DATA_EVENT,
+            type: UPDATE_VALUE_EVENT,
             payload: {
-              id: dataId,
-              key: attribute,
+              dataId: id,
               value: event.target.value,
             },
           })
         }
         value={value}
       >
-        {values.map(v => (
+        {attributes.map(v => (
           <option key={v} value={v}>
             {v}
           </option>
@@ -149,18 +307,17 @@ const AttributeSettings = ({ id, dataId, attribute, type, context }) => {
       </Select>
     )
   }
-  if (attributeType === 'number') {
+  if (type === 'number') {
     return (
       <NumberInput
         value={value}
-        min={values[0]}
-        max={values[1]}
+        min={attributes[0]}
+        max={attributes[1]}
         onChange={newVal =>
           dispatch({
-            type: UPDATE_MODULE_DATA_EVENT,
+            type: UPDATE_VALUE_EVENT,
             payload: {
-              id: dataId,
-              key: attribute,
+              dataId: id,
               value: newVal,
             },
           })
@@ -174,67 +331,65 @@ const AttributeSettings = ({ id, dataId, attribute, type, context }) => {
       </NumberInput>
     )
   }
-  if (attributeType === 'checkbox') {
+  if (type === 'checkbox') {
     return (
       <Checkbox
         isChecked={value}
         onChange={() =>
           dispatch({
-            type: UPDATE_MODULE_DATA_EVENT,
+            type: UPDATE_VALUE_EVENT,
             payload: {
-              id: dataId,
-              key: attribute,
+              dataId: id,
               value: !value,
             },
           })
         }
       >
-        {attribute}
+        {key}
       </Checkbox>
     )
   }
-  if (attributeType === 'grid') {
+  if (type === 'grid') {
     return (
       <SimpleGrid columns={1} spacing={2}>
         <Stack>
           <FormLabel>Add column</FormLabel>
           <AddType
-            types={values}
-            onAdd={({ type }) =>
+            types={attributes}
+            onAdd={({ type: columnType }) =>
               dispatch({
-                type: PUSH_MODULE_DATA_EVENT,
+                type: ADD_DATALINK_EVENT,
                 payload: {
-                  id: dataId,
-                  key: attribute,
-                  value: { type },
+                  parentId: id,
+                  id: generateId(columnType),
+                  value: { ...config[columnType], data: [] },
                 },
               })
             }
           />
         </Stack>
-        {Array.isArray(value) && value.length > 0 && (
+        {Array.isArray(data) && data.length > 0 && (
           <Heading as="h4" size="xs">
             Columns:
           </Heading>
         )}
         <Accordion allowMultiple>
-          {Array.isArray(value) &&
-            value.map(valueId => (
+          {Array.isArray(data) &&
+            data.map(valueId => (
               <AccordionItem key={valueId}>
                 <AccordionHeader>
                   <Box flex="1" textAlign="left">
                     <Heading as="h5" size="xs">
-                      {store[valueId].type}
+                      {store[valueId].key}
                     </Heading>
                   </Box>
                   <AccordionIcon />
                 </AccordionHeader>
                 <AccordionPanel>
-                  <DataSettings
-                    id={dataId}
-                    dataId={valueId}
-                    type={store[valueId].type}
-                    context={columns}
+                  <AttributesList
+                    parentId={valueId}
+                    store={store}
+                    dispatch={dispatch}
                   />
                 </AccordionPanel>
               </AccordionItem>
@@ -243,72 +398,73 @@ const AttributeSettings = ({ id, dataId, attribute, type, context }) => {
       </SimpleGrid>
     )
   }
-  if (attributeType === 'component') {
-    if (!store[dataId][attribute]) {
-      dispatch({
-        type: PUSH_MODULE_DATA_EVENT,
-        payload: {
-          id: id,
-          key: attribute,
-          value: {
-            type:
-              store[id][context[type].component ?? components[type].component],
-          },
-        },
-      })
-    }
+  // if (type === 'choosable-component') {
+  //   const componentStorageKey = attributes[0]
+  //   const { value: choosenComponent } =
+  //     store[componentStorageKey] ?? config[componentStorageKey]
+  //   return <AttributesList parentId={id} store={store} dispatch={dispatch} />
+  // }
+  if (type === 'component') {
     return (
-      <DataSettings
-        id={dataId}
-        dataId={store[dataId][attribute]}
-        type={store[store[dataId][attribute]]}
-        context={components}
-      />
+      <Accordion allowMultiple>
+        <AccordionItem>
+          <AccordionHeader>{key}</AccordionHeader>
+          <AccordionPanel>
+            <AttributesList parentId={id} store={store} dispatch={dispatch} />
+          </AccordionPanel>
+        </AccordionItem>
+      </Accordion>
     )
   }
+  // return store[id]
 }
 
-const DataSettings = ({ id, dataId, type, context }) => {
-  console.log('DataSettings', { id, dataId, type, context })
-  const { store, dispatch } = useData()
+const AttributesList = ({ parentId, store, dispatch }) => {
+  const { attributes } = store[parentId]
   return (
     <Stack spacing={4}>
-      {Object.keys(context[type]).map(key => {
-        const htmlId = `${id}-${key}`
+      {attributes.map(attribute => {
+        const htmlId = `${parentId}-${attribute}`
+        const id = store[parentId].data.find(
+          dataId => store[dataId].key === attribute,
+        )
         return (
           <Stack spacing={2} key={htmlId}>
             <Stack isInline>
               <Switch
                 id={htmlId}
-                name={key}
+                name={attribute}
                 onChange={e => {
-                  ;(e as React.ChangeEvent<HTMLInputElement>).target.checked
-                    ? dispatch({
-                        type: ADD_MODULE_DATA_EVENT,
-                        payload: {
-                          id: dataId,
-                          key,
-                          value: context[type][key].default,
+                  if (
+                    (e as React.ChangeEvent<HTMLInputElement>).target.checked
+                  ) {
+                    dispatch({
+                      type: ADD_DATALINK_EVENT,
+                      payload: {
+                        parentId,
+                        id: generateId(attribute),
+                        value: {
+                          ...config[attribute],
+                          data: [],
                         },
-                      })
-                    : dispatch({
-                        type: REMOVE_MODULE_DATA_EVENT,
-                        payload: { id: dataId, key },
-                      })
+                      },
+                    })
+                  } else {
+                    dispatch({
+                      type: REMOVE_DATALINK_EVENT,
+                      payload: {
+                        parentId,
+                        dataId: id,
+                      },
+                    })
+                  }
                 }}
               />
-              <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+              <FormLabel htmlFor={htmlId}>{attribute}</FormLabel>
             </Stack>
-            {store?.[dataId]?.[key] !== undefined &&
-              context[type][key].values && (
-                <AttributeSettings
-                  id={id}
-                  dataId={dataId}
-                  type={type}
-                  attribute={key}
-                  context={context}
-                />
-              )}
+            {id && (
+              <AttributeSettings id={id} store={store} dispatch={dispatch} />
+            )}
             <Divider />
           </Stack>
         )
@@ -318,9 +474,9 @@ const DataSettings = ({ id, dataId, type, context }) => {
 }
 
 const Home = () => {
-  const [activeModules, dispatch] = useReducer(moduleReducer, {})
-  const [dataStore, updateData] = useReducer(dataReducer, {})
-
+  const [store, dispatch] = useReducer(reducer, {
+    root: { type: 'modules', key: 'modules', id: 'root', data: [] },
+  })
   return (
     <div className="container">
       <Head>
@@ -329,57 +485,57 @@ const Home = () => {
       </Head>
       <ThemeProvider>
         <CSSReset />
-        <DataProvider value={{ store: dataStore, dispatch: updateData }}>
-          <main>
-            <section>
-              <div className="card">
-                <SimpleGrid columns={1} spacing={5}>
-                  <Stack>
-                    <FormLabel>Add module</FormLabel>
-                    <AddType
-                      types={Object.keys(modules)}
-                      onAdd={({ type }) =>
-                        dispatch({
-                          type: ADD_MODULE_EVENT,
-                          payload: { type, updateData },
-                        })
-                      }
-                    />
-                  </Stack>
-                  <Heading as="h2" size="md">
-                    Modules:
-                  </Heading>
-                  <Accordion allowMultiple>
-                    {Object.values(activeModules).map(({ id, data, type }) => (
-                      <AccordionItem key={id}>
-                        <AccordionHeader>
-                          <Box flex="1" textAlign="left">
-                            <Heading as="h3" size="sm">
-                              {type}
-                            </Heading>
-                          </Box>
-                          <AccordionIcon />
-                        </AccordionHeader>
-                        <AccordionPanel>
-                          <DataSettings
-                            context={modules}
-                            {...{ id, dataId: data, type }}
-                          />
-                        </AccordionPanel>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </SimpleGrid>
-              </div>
-            </section>
-            <section>
-              <pre className="card">
-                <code>{JSON.stringify(activeModules, undefined, 2)}</code>
-                <code>{JSON.stringify(dataStore, undefined, 2)}</code>
-              </pre>
-            </section>
-          </main>
-        </DataProvider>
+        <main>
+          <section className="card">
+            <SimpleGrid columns={1} spacing={4}>
+              <Stack>
+                <FormLabel>Add module</FormLabel>
+                <AddType
+                  types={config.modules.attributes}
+                  onAdd={({ type }) =>
+                    dispatch({
+                      type: ADD_DATALINK_EVENT,
+                      payload: {
+                        parentId: 'root',
+                        id: generateId(type),
+                        value: { ...config[type], data: [] },
+                      },
+                    })
+                  }
+                />
+              </Stack>
+              <Heading as="h2" size="md">
+                Modules:
+              </Heading>
+              <Accordion allowMultiple>
+                {store.root.data.map(dataId => (
+                  <AccordionItem key={dataId}>
+                    <AccordionHeader>{store[dataId].key}</AccordionHeader>
+                    <AccordionPanel>
+                      <AttributesList
+                        parentId={dataId}
+                        store={store}
+                        dispatch={dispatch}
+                      />
+                    </AccordionPanel>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </SimpleGrid>
+          </section>
+          <section>
+            <pre className="card">
+              <code>
+                {JSON.stringify(
+                  getValue(store.root, store).modules,
+                  undefined,
+                  2,
+                )}
+              </code>
+              <code>{JSON.stringify(store, undefined, 2)}</code>
+            </pre>
+          </section>
+        </main>
       </ThemeProvider>
 
       <style jsx>{`
