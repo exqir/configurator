@@ -28,116 +28,8 @@ import {
 import deepmerge from 'deepmerge'
 import { DataProvider, useData } from '../components/DataContext'
 import { AddType } from '../components/AddType'
-import {
-  ADD_DATALINK_EVENT,
-  REMOVE_DATALINK_EVENT,
-  UPDATE_VALUE_EVENT,
-  reducer,
-  generateId,
-} from '../reducers'
-
-const config = {
-  modules: {
-    key: 'modules',
-    type: 'root',
-    attributes: ['cart-horizontal', 'progress-stepper'],
-  },
-  'cart-horizontal': {
-    key: 'cart-horizontal',
-    type: 'module',
-    attributes: ['hideHeadlines', 'cartColumns'],
-  },
-  'progress-stepper': {
-    key: 'progress-stepper',
-    type: 'module',
-    attributes: ['activeStep', 'steps'],
-  },
-  activeStep: {
-    key: 'activeStep',
-    type: 'number',
-    value: 0,
-    attributes: [0, 3],
-  },
-  steps: {
-    key: 'steps',
-    type: 'select',
-    value: 'first',
-    attributes: ['first', 'second'],
-  },
-  hideHeadlines: {
-    key: 'hideHeadlines',
-    type: 'checkbox',
-    value: true,
-    attributes: [true, false],
-  },
-  cartColumns: {
-    key: 'cartColumns',
-    type: 'grid',
-    attributes: ['quantity', 'cart_actions'],
-  },
-  quantity: {
-    key: 'quantity',
-    type: 'column',
-    attributes: ['width', 'justify', 'qty_selection'],
-  },
-  cart_actions: {
-    key: 'cart_actions',
-    type: 'column',
-    attributes: ['width', 'justify'],
-  },
-  width: {
-    key: 'width',
-    type: 'number',
-    value: 1,
-    attributes: [1, 12],
-  },
-  justify: {
-    key: 'justify',
-    type: 'select',
-    value: 'left',
-    attributes: ['left', 'right', 'center'],
-  },
-  qty_selection: {
-    key: 'qty_selection',
-    type: 'component-selection',
-    value: 'quantity_stepper',
-    attributes: ['quantity_stepper', 'select'],
-  },
-  quantity_stepper: {
-    key: 'quantity_stepper',
-    type: 'component',
-    attributes: ['component_type', 'hasBorder'],
-  },
-  select: {
-    key: 'select',
-    type: 'component',
-    attributes: ['component_type', 'select_variants'],
-  },
-  component_type: {
-    key: 'component_type',
-    type: 'select',
-    value: 'primary',
-    attributes: ['primary', 'secondary', 'success', 'danger'],
-  },
-  select_variants: {
-    key: 'select_variants',
-    type: 'select',
-    value: 'outlined',
-    attributes: ['outlined', 'underlined'],
-  },
-  quantity_stepper_variants: {
-    key: 'quantity_stepper_variants',
-    type: 'select',
-    value: 'arrows',
-    attributes: ['arrows', 'plus_minus'],
-  },
-  hasBorder: {
-    key: 'hasBorder',
-    type: 'checkbox',
-    value: true,
-    attributes: [true, false],
-  },
-}
+import { config, Key } from '../components/config'
+import { ActionType, Reducer, reducer, generateId } from '../reducers'
 
 function getValue({ type, key, value, data }, store) {
   if (value !== null && value !== undefined) return { [key]: value }
@@ -157,7 +49,8 @@ function getValue({ type, key, value, data }, store) {
 
 const AttributeSettings = ({ id }) => {
   const { store, dispatch } = useData()
-  const { type, value, key, attributes, data } = store[id]
+  const { type, value, key, data } = store[id]
+  const { attributes } = config[key]
 
   if (type === 'select') {
     return (
@@ -166,16 +59,16 @@ const AttributeSettings = ({ id }) => {
         name={`${id}-values`}
         onChange={(event) =>
           dispatch({
-            type: UPDATE_VALUE_EVENT,
+            type: ActionType.UPDATE_VALUE_EVENT,
             payload: {
-              dataId: id,
+              id,
               value: event.target.value,
             },
           })
         }
-        value={value}
+        value={value as string}
       >
-        {attributes.map((v) => (
+        {(attributes as readonly Key[]).map((v) => (
           <option key={v} value={v}>
             {v}
           </option>
@@ -186,14 +79,14 @@ const AttributeSettings = ({ id }) => {
   if (type === 'number') {
     return (
       <NumberInput
-        value={value}
-        min={attributes[0]}
-        max={attributes[1]}
+        value={value as number}
+        min={attributes[0] as number}
+        max={attributes[1] as number}
         onChange={(newVal) =>
           dispatch({
-            type: UPDATE_VALUE_EVENT,
+            type: ActionType.UPDATE_VALUE_EVENT,
             payload: {
-              dataId: id,
+              id,
               value: newVal,
             },
           })
@@ -210,12 +103,12 @@ const AttributeSettings = ({ id }) => {
   if (type === 'checkbox') {
     return (
       <Checkbox
-        isChecked={value}
+        isChecked={value as boolean}
         onChange={() =>
           dispatch({
-            type: UPDATE_VALUE_EVENT,
+            type: ActionType.UPDATE_VALUE_EVENT,
             payload: {
-              dataId: id,
+              id,
               value: !value,
             },
           })
@@ -231,14 +124,14 @@ const AttributeSettings = ({ id }) => {
         <Stack>
           <FormLabel>Add column</FormLabel>
           <AddType
-            types={attributes}
+            types={attributes as readonly Key[]}
             onAdd={({ type: columnType }) =>
               dispatch({
-                type: ADD_DATALINK_EVENT,
+                type: ActionType.ADD_DATALINK_EVENT,
                 payload: {
                   parentId: id,
                   id: generateId(columnType),
-                  value: { ...config[columnType], data: [] },
+                  key: columnType as Key,
                 },
               })
             }
@@ -273,11 +166,11 @@ const AttributeSettings = ({ id }) => {
   if (type === 'component-selection') {
     if (data.length === 0) {
       dispatch({
-        type: ADD_DATALINK_EVENT,
+        type: ActionType.ADD_DATALINK_EVENT,
         payload: {
           parentId: id,
-          id: generateId(value),
-          value: { ...config[value], data: [] },
+          id: generateId(value as string),
+          key: value as Key,
         },
       })
     }
@@ -287,17 +180,17 @@ const AttributeSettings = ({ id }) => {
         <RadioGroup
           onChange={(e) => {
             dispatch({
-              type: UPDATE_VALUE_EVENT,
-              payload: { dataId: id, value: e.target.value },
+              type: ActionType.UPDATE_VALUE_EVENT,
+              payload: { id, value: e.target.value },
             })
             dispatch({
-              type: REMOVE_DATALINK_EVENT,
-              payload: { parentId: id, dataId: data[0] },
+              type: ActionType.REMOVE_DATALINK_EVENT,
+              payload: { parentId: id, id: data[0] },
             })
           }}
-          value={value}
+          value={value as string}
         >
-          {attributes.map((component) => (
+          {(attributes as readonly Key[]).map((component) => (
             <Radio value={component} key={component}>
               {component}
             </Radio>
@@ -332,10 +225,11 @@ const AttributeSettings = ({ id }) => {
 
 const AttributesList = ({ parentId }) => {
   const { store, dispatch } = useData()
-  const { attributes } = store[parentId]
+  const { key } = store[parentId]
+  const { attributes } = config[key]
   return (
     <Stack spacing={4}>
-      {attributes.map((attribute) => {
+      {(attributes as readonly Key[]).map((attribute) => {
         const htmlId = `${parentId}-${attribute}`
         const id = store[parentId].data.find(
           (dataId) => store[dataId].key === attribute,
@@ -351,22 +245,19 @@ const AttributesList = ({ parentId }) => {
                     (e as React.ChangeEvent<HTMLInputElement>).target.checked
                   ) {
                     dispatch({
-                      type: ADD_DATALINK_EVENT,
+                      type: ActionType.ADD_DATALINK_EVENT,
                       payload: {
                         parentId,
                         id: generateId(attribute),
-                        value: {
-                          ...config[attribute],
-                          data: [],
-                        },
+                        key: attribute,
                       },
                     })
                   } else {
                     dispatch({
-                      type: REMOVE_DATALINK_EVENT,
+                      type: ActionType.REMOVE_DATALINK_EVENT,
                       payload: {
                         parentId,
-                        dataId: id,
+                        id,
                       },
                     })
                   }
@@ -384,8 +275,8 @@ const AttributesList = ({ parentId }) => {
 }
 
 const Home = () => {
-  const [store, dispatch] = useReducer(reducer, {
-    root: { type: 'modules', key: 'modules', id: 'root', data: [] },
+  const [store, dispatch] = useReducer<Reducer>(reducer, {
+    root: { type: 'root', key: 'modules', id: 'root', data: [] },
   })
   return (
     <div className="container">
@@ -402,14 +293,14 @@ const Home = () => {
                 <Stack>
                   <FormLabel>Add module</FormLabel>
                   <AddType
-                    types={config.modules.attributes}
+                    types={config.modules.attributes as readonly Key[]}
                     onAdd={({ type }) =>
                       dispatch({
-                        type: ADD_DATALINK_EVENT,
+                        type: ActionType.ADD_DATALINK_EVENT,
                         payload: {
                           parentId: 'root',
                           id: generateId(type),
-                          value: { ...config[type], data: [] },
+                          key: type as Key,
                         },
                       })
                     }
@@ -434,6 +325,7 @@ const Home = () => {
               <pre className="card">
                 <code>
                   {JSON.stringify(
+                    // @ts-ignore
                     getValue(store.root, store).modules,
                     undefined,
                     2,

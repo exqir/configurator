@@ -1,71 +1,80 @@
 import { generate } from 'shortid'
+import { Key, config } from '../components/config'
 
-type ModuleType = 'cart-horizontal' | 'progress-stepper'
-type ModuleStoreAction = {
-  type: 'ADD_MODULE' | string
+export enum ActionType {
+  ADD_DATALINK_EVENT,
+  REMOVE_DATALINK_EVENT,
+  UPDATE_VALUE_EVENT,
+}
+
+type DataType =
+  | 'root'
+  | 'module'
+  | 'grid'
+  | 'column'
+  | 'component-selection'
+  | 'component'
+  | 'number'
+  | 'select'
+  | 'checkbox'
+
+export type Action = {
+  type: ActionType
   payload: {
-    type: ModuleType
-    updateData: (...any) => void
+    parentId?: string
+    id: string
+    key?: Key
+    value?: string | number | boolean
   }
 }
-type ModuleStore = {
+
+export type ModuleStore = {
   [id: string]: {
     id: string
-    type: ModuleType
-    data: string
+    key: Key
+    type: DataType
+    value?: string | boolean | number
+    data: string[]
   }
 }
 
-export const CREATE_DATASET_EVENT = 'CREATE_DATASET'
-export const ADD_DATALINK_EVENT = 'ADD_DATALINK'
-export const REMOVE_DATALINK_EVENT = 'REMOVE_DATALINK'
-export const UPDATE_VALUE_EVENT = 'UPDATE_VALUE'
+export type Reducer = (prevState: ModuleStore, action: Action) => ModuleStore
 
 export const generateId = (type: string) => `${type}-${generate()}`
 
-export function reducer(prevState, { type, payload }) {
+export const reducer: Reducer = (prevState, { type, payload }) => {
   switch (type) {
-    case CREATE_DATASET_EVENT: {
-      const id = `${payload.type}-${generate()}`
-      return {
-        ...prevState,
-        [id]: {
-          id,
-          type: payload.type,
-          data: [],
-        },
-      }
-    }
-    case ADD_DATALINK_EVENT: {
-      const { parentId, id, value } = payload
+    case ActionType.ADD_DATALINK_EVENT: {
+      const { parentId, id, key } = payload
       const dataSet = prevState[parentId]
+      const { attributes: _, ...initialValue } = config[key]
       return {
         ...prevState,
         [parentId]: {
           ...dataSet,
           data: [...dataSet.data, id],
         },
-        [id]: { ...value, id },
+        [id]: { ...initialValue, id, data: [] },
       }
     }
-    case REMOVE_DATALINK_EVENT: {
-      const { parentId, dataId } = payload
-      const { [dataId]: removed, ...newState } = prevState
+    case ActionType.REMOVE_DATALINK_EVENT: {
+      const { parentId, id } = payload
+      const { [id]: removed, ...newState } = prevState
       const parent = prevState[parentId]
       return {
         ...newState,
         [parentId]: {
           ...parent,
-          data: parent.data.filter(link => link !== dataId),
+          data: parent.data.filter((link) => link !== id),
         },
       }
     }
-    case UPDATE_VALUE_EVENT: {
-      const { dataId, value } = payload
+    case ActionType.UPDATE_VALUE_EVENT: {
+      const { id, value } = payload
       return {
         ...prevState,
-        [dataId]: {
-          ...prevState[dataId],
+        [id]: {
+          ...prevState[id],
           value,
         },
       }
