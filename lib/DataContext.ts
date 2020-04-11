@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import { ModuleStore, Action } from '../reducers/'
+import { ModuleStore, Action } from '../reducers'
 
 const DataContext = createContext<{
   store: ModuleStore

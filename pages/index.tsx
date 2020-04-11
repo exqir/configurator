@@ -26,26 +26,11 @@ import {
   Radio,
 } from '@chakra-ui/core'
 import deepmerge from 'deepmerge'
-import { DataProvider, useData } from '../components/DataContext'
+import { DataProvider, useData } from '../lib/DataContext'
 import { AddType } from '../components/AddType'
-import { config, Key } from '../components/config'
+import { config, Key } from '../lib/config'
+import { walkStore } from '../lib/walkStore'
 import { ActionType, Reducer, reducer, generateId } from '../reducers'
-
-function getValue({ type, key, value, data }, store) {
-  if (value !== null && value !== undefined) return { [key]: value }
-  if (type === 'grid') {
-    return data.map((id) => ({ [key]: getValue(store[id], store) }))
-  }
-  if (type === 'column') {
-    return data.map((id) => ({
-      ...getValue(store[id], store),
-      type: store[id].type,
-    }))
-  }
-  return data
-    .map((id) => ({ [key]: getValue(store[id], store) }))
-    .reduce((acc, o) => deepmerge(acc, o, undefined), {})
-}
 
 const AttributeSettings = ({ id }) => {
   const { store, dispatch } = useData()
@@ -323,14 +308,10 @@ const Home = () => {
             </section>
             <section>
               <pre className="card">
-                <code>
-                  {JSON.stringify(
-                    // @ts-ignore
-                    getValue(store.root, store).modules,
-                    undefined,
-                    2,
-                  )}
-                </code>
+                <code>{JSON.stringify(walkStore(store), undefined, 2)}</code>
+              </pre>
+              Debug:
+              <pre className="card">
                 <code>{JSON.stringify(store, undefined, 2)}</code>
               </pre>
             </section>

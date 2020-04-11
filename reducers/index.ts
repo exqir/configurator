@@ -1,5 +1,5 @@
 import { generate } from 'shortid'
-import { Key, config } from '../components/config'
+import { Key, config } from '../lib/config'
 
 export enum ActionType {
   ADD_DATALINK_EVENT,
