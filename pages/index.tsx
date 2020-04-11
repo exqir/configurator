@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import React, { useReducer } from 'react'
+import React, { useReducer, Fragment } from 'react'
 import {
   ThemeProvider,
   CSSReset,
@@ -22,7 +22,10 @@ import {
   AccordionIcon,
   SimpleGrid,
   Divider,
+  RadioGroup,
+  Radio,
 } from '@chakra-ui/core'
+import deepmerge from 'deepmerge'
 import { DataProvider, useData } from '../components/DataContext'
 import { AddType } from '../components/AddType'
 import {
@@ -32,142 +35,6 @@ import {
   reducer,
   generateId,
 } from '../reducers'
-
-function isMergeableObject(val) {
-  var nonNullObject = val && typeof val === 'object'
-
-  return (
-    nonNullObject &&
-    Object.prototype.toString.call(val) !== '[object RegExp]' &&
-    Object.prototype.toString.call(val) !== '[object Date]'
-  )
-}
-
-function emptyTarget(val) {
-  return Array.isArray(val) ? [] : {}
-}
-
-function cloneIfNecessary(value, optionsArgument) {
-  var clone = optionsArgument && optionsArgument.clone === true
-  return clone && isMergeableObject(value)
-    ? deepmerge(emptyTarget(value), value, optionsArgument)
-    : value
-}
-
-function defaultArrayMerge(target, source, optionsArgument) {
-  var destination = target.slice()
-  source.forEach(function(e, i) {
-    if (typeof destination[i] === 'undefined') {
-      destination[i] = cloneIfNecessary(e, optionsArgument)
-    } else if (isMergeableObject(e)) {
-      destination[i] = deepmerge(target[i], e, optionsArgument)
-    } else if (target.indexOf(e) === -1) {
-      destination.push(cloneIfNecessary(e, optionsArgument))
-    }
-  })
-  return destination
-}
-
-function mergeObject(target, source, optionsArgument) {
-  var destination = {}
-  if (isMergeableObject(target)) {
-    Object.keys(target).forEach(function(key) {
-      destination[key] = cloneIfNecessary(target[key], optionsArgument)
-    })
-  }
-  Object.keys(source).forEach(function(key) {
-    if (!isMergeableObject(source[key]) || !target[key]) {
-      destination[key] = cloneIfNecessary(source[key], optionsArgument)
-    } else {
-      destination[key] = deepmerge(target[key], source[key], optionsArgument)
-    }
-  })
-  return destination
-}
-
-function deepmerge(target, source, optionsArgument) {
-  var array = Array.isArray(source)
-  var options = optionsArgument || { arrayMerge: defaultArrayMerge }
-  var arrayMerge = options.arrayMerge || defaultArrayMerge
-
-  if (array) {
-    return Array.isArray(target)
-      ? arrayMerge(target, source, optionsArgument)
-      : cloneIfNecessary(source, optionsArgument)
-  } else {
-    return mergeObject(target, source, optionsArgument)
-  }
-}
-
-deepmerge.all = function deepmergeAll(array, optionsArgument) {
-  if (!Array.isArray(array) || array.length < 2) {
-    throw new Error(
-      'first argument should be an array with at least two elements',
-    )
-  }
-
-  // we are sure there are at least 2 values, so it is safe to have no initial value
-  return array.reduce(function(prev, next) {
-    return deepmerge(prev, next, optionsArgument)
-  })
-}
-
-const modules = {
-  'cart-horizontal': {
-    hideHeadlines: { type: 'checkbox', default: true, values: [true, false] },
-    cartColumns: {
-      type: 'grid',
-      default: [],
-      values: ['quantity', 'cart_actions'],
-    },
-  },
-  'progress-stepper': {
-    activeStep: { default: 0 },
-    steps: { default: ['details', 'done'] },
-  },
-}
-
-const column = {
-  width: { type: 'number', default: 1, values: [1, 12] },
-  justify: {
-    type: 'select',
-    default: 'left',
-    values: ['left', 'right', 'center'],
-  },
-}
-
-const columns = {
-  quantity: {
-    ...column,
-    quantity_selection_component: {
-      type: 'select',
-      default: 'quantity_stepper',
-      values: ['quantity_stepper', 'select'],
-    },
-    quantity_selection: {
-      type: 'component',
-      component: 'quantity_selection_component',
-      default: [],
-    },
-  },
-  cart_actions: {
-    ...column,
-  },
-}
-
-const componentType = {
-  type: 'select',
-  default: 'primary',
-  values: ['primary', 'secondary', 'success', 'danger'],
-}
-const components = {
-  quantity_stepper: {
-    type: componentType,
-  },
-  select: {
-    type: componentType,
-  },
-}
 
 const config = {
   modules: {
@@ -211,12 +78,7 @@ const config = {
   quantity: {
     key: 'quantity',
     type: 'column',
-    attributes: [
-      'width',
-      'justify',
-      // 'qty_selection_component',
-      'qty_selection',
-    ],
+    attributes: ['width', 'justify', 'qty_selection'],
   },
   cart_actions: {
     key: 'cart_actions',
@@ -235,26 +97,21 @@ const config = {
     value: 'left',
     attributes: ['left', 'right', 'center'],
   },
-  // qty_selection_component: {
-  //   key: 'qty_selection_component',
-  //   type: 'select',
-  //   value: 'quantity_stepper',
-  //   attributes: ['quantity_stepper', 'select'],
-  // },
-  // qty_selection: {
-  //   key: 'qty_selection',
-  //   type: 'choosable-component',
-  //   attributes: ['qty_selection_component'],
-  // },
   qty_selection: {
     key: 'qty_selection',
-    type: 'component',
-    attributes: ['component_type'],
+    type: 'component-selection',
+    value: 'quantity_stepper',
+    attributes: ['quantity_stepper', 'select'],
   },
   quantity_stepper: {
     key: 'quantity_stepper',
     type: 'component',
-    attributes: ['component_type'],
+    attributes: ['component_type', 'hasBorder'],
+  },
+  select: {
+    key: 'select',
+    type: 'component',
+    attributes: ['component_type', 'select_variants'],
   },
   component_type: {
     key: 'component_type',
@@ -262,25 +119,44 @@ const config = {
     value: 'primary',
     attributes: ['primary', 'secondary', 'success', 'danger'],
   },
+  select_variants: {
+    key: 'select_variants',
+    type: 'select',
+    value: 'outlined',
+    attributes: ['outlined', 'underlined'],
+  },
+  quantity_stepper_variants: {
+    key: 'quantity_stepper_variants',
+    type: 'select',
+    value: 'arrows',
+    attributes: ['arrows', 'plus_minus'],
+  },
+  hasBorder: {
+    key: 'hasBorder',
+    type: 'checkbox',
+    value: true,
+    attributes: [true, false],
+  },
 }
 
 function getValue({ type, key, value, data }, store) {
   if (value !== null && value !== undefined) return { [key]: value }
   if (type === 'grid') {
-    return data.map(id => ({ [key]: getValue(store[id], store) }))
+    return data.map((id) => ({ [key]: getValue(store[id], store) }))
   }
   if (type === 'column') {
-    return data.map(id => ({
+    return data.map((id) => ({
       ...getValue(store[id], store),
       type: store[id].type,
     }))
   }
   return data
-    .map(id => ({ [key]: getValue(store[id], store) }))
+    .map((id) => ({ [key]: getValue(store[id], store) }))
     .reduce((acc, o) => deepmerge(acc, o, undefined), {})
 }
 
-const AttributeSettings = ({ id, store, dispatch }) => {
+const AttributeSettings = ({ id }) => {
+  const { store, dispatch } = useData()
   const { type, value, key, attributes, data } = store[id]
 
   if (type === 'select') {
@@ -288,7 +164,7 @@ const AttributeSettings = ({ id, store, dispatch }) => {
       <Select
         id={`${id}-values`}
         name={`${id}-values`}
-        onChange={event =>
+        onChange={(event) =>
           dispatch({
             type: UPDATE_VALUE_EVENT,
             payload: {
@@ -299,7 +175,7 @@ const AttributeSettings = ({ id, store, dispatch }) => {
         }
         value={value}
       >
-        {attributes.map(v => (
+        {attributes.map((v) => (
           <option key={v} value={v}>
             {v}
           </option>
@@ -313,7 +189,7 @@ const AttributeSettings = ({ id, store, dispatch }) => {
         value={value}
         min={attributes[0]}
         max={attributes[1]}
-        onChange={newVal =>
+        onChange={(newVal) =>
           dispatch({
             type: UPDATE_VALUE_EVENT,
             payload: {
@@ -375,7 +251,7 @@ const AttributeSettings = ({ id, store, dispatch }) => {
         )}
         <Accordion allowMultiple>
           {Array.isArray(data) &&
-            data.map(valueId => (
+            data.map((valueId) => (
               <AccordionItem key={valueId}>
                 <AccordionHeader>
                   <Box flex="1" textAlign="left">
@@ -386,11 +262,7 @@ const AttributeSettings = ({ id, store, dispatch }) => {
                   <AccordionIcon />
                 </AccordionHeader>
                 <AccordionPanel>
-                  <AttributesList
-                    parentId={valueId}
-                    store={store}
-                    dispatch={dispatch}
-                  />
+                  <AttributesList parentId={valueId} />
                 </AccordionPanel>
               </AccordionItem>
             ))}
@@ -398,19 +270,58 @@ const AttributeSettings = ({ id, store, dispatch }) => {
       </SimpleGrid>
     )
   }
-  // if (type === 'choosable-component') {
-  //   const componentStorageKey = attributes[0]
-  //   const { value: choosenComponent } =
-  //     store[componentStorageKey] ?? config[componentStorageKey]
-  //   return <AttributesList parentId={id} store={store} dispatch={dispatch} />
-  // }
+  if (type === 'component-selection') {
+    if (data.length === 0) {
+      dispatch({
+        type: ADD_DATALINK_EVENT,
+        payload: {
+          parentId: id,
+          id: generateId(value),
+          value: { ...config[value], data: [] },
+        },
+      })
+    }
+
+    return (
+      <SimpleGrid columns={1} spacing={2}>
+        <RadioGroup
+          onChange={(e) => {
+            dispatch({
+              type: UPDATE_VALUE_EVENT,
+              payload: { dataId: id, value: e.target.value },
+            })
+            dispatch({
+              type: REMOVE_DATALINK_EVENT,
+              payload: { parentId: id, dataId: data[0] },
+            })
+          }}
+          value={value}
+        >
+          {attributes.map((component) => (
+            <Radio value={component} key={component}>
+              {component}
+            </Radio>
+          ))}
+        </RadioGroup>
+        {Array.isArray(data) &&
+          data.map((valueId) => (
+            <Fragment key={valueId}>
+              <Heading as="h5" size="xs">
+                {store[valueId].key}
+              </Heading>
+              <AttributesList parentId={valueId} />
+            </Fragment>
+          ))}
+      </SimpleGrid>
+    )
+  }
   if (type === 'component') {
     return (
       <Accordion allowMultiple>
         <AccordionItem>
           <AccordionHeader>{key}</AccordionHeader>
           <AccordionPanel>
-            <AttributesList parentId={id} store={store} dispatch={dispatch} />
+            <AttributesList parentId={id} />
           </AccordionPanel>
         </AccordionItem>
       </Accordion>
@@ -419,14 +330,15 @@ const AttributeSettings = ({ id, store, dispatch }) => {
   // return store[id]
 }
 
-const AttributesList = ({ parentId, store, dispatch }) => {
+const AttributesList = ({ parentId }) => {
+  const { store, dispatch } = useData()
   const { attributes } = store[parentId]
   return (
     <Stack spacing={4}>
-      {attributes.map(attribute => {
+      {attributes.map((attribute) => {
         const htmlId = `${parentId}-${attribute}`
         const id = store[parentId].data.find(
-          dataId => store[dataId].key === attribute,
+          (dataId) => store[dataId].key === attribute,
         )
         return (
           <Stack spacing={2} key={htmlId}>
@@ -434,7 +346,7 @@ const AttributesList = ({ parentId, store, dispatch }) => {
               <Switch
                 id={htmlId}
                 name={attribute}
-                onChange={e => {
+                onChange={(e) => {
                   if (
                     (e as React.ChangeEvent<HTMLInputElement>).target.checked
                   ) {
@@ -462,9 +374,7 @@ const AttributesList = ({ parentId, store, dispatch }) => {
               />
               <FormLabel htmlFor={htmlId}>{attribute}</FormLabel>
             </Stack>
-            {id && (
-              <AttributeSettings id={id} store={store} dispatch={dispatch} />
-            )}
+            {id && <AttributeSettings id={id} />}
             <Divider />
           </Stack>
         )
@@ -485,57 +395,55 @@ const Home = () => {
       </Head>
       <ThemeProvider>
         <CSSReset />
-        <main>
-          <section className="card">
-            <SimpleGrid columns={1} spacing={4}>
-              <Stack>
-                <FormLabel>Add module</FormLabel>
-                <AddType
-                  types={config.modules.attributes}
-                  onAdd={({ type }) =>
-                    dispatch({
-                      type: ADD_DATALINK_EVENT,
-                      payload: {
-                        parentId: 'root',
-                        id: generateId(type),
-                        value: { ...config[type], data: [] },
-                      },
-                    })
-                  }
-                />
-              </Stack>
-              <Heading as="h2" size="md">
-                Modules:
-              </Heading>
-              <Accordion allowMultiple>
-                {store.root.data.map(dataId => (
-                  <AccordionItem key={dataId}>
-                    <AccordionHeader>{store[dataId].key}</AccordionHeader>
-                    <AccordionPanel>
-                      <AttributesList
-                        parentId={dataId}
-                        store={store}
-                        dispatch={dispatch}
-                      />
-                    </AccordionPanel>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </SimpleGrid>
-          </section>
-          <section>
-            <pre className="card">
-              <code>
-                {JSON.stringify(
-                  getValue(store.root, store).modules,
-                  undefined,
-                  2,
-                )}
-              </code>
-              <code>{JSON.stringify(store, undefined, 2)}</code>
-            </pre>
-          </section>
-        </main>
+        <DataProvider value={{ store, dispatch }}>
+          <main>
+            <section className="card">
+              <SimpleGrid columns={1} spacing={4}>
+                <Stack>
+                  <FormLabel>Add module</FormLabel>
+                  <AddType
+                    types={config.modules.attributes}
+                    onAdd={({ type }) =>
+                      dispatch({
+                        type: ADD_DATALINK_EVENT,
+                        payload: {
+                          parentId: 'root',
+                          id: generateId(type),
+                          value: { ...config[type], data: [] },
+                        },
+                      })
+                    }
+                  />
+                </Stack>
+                <Heading as="h2" size="md">
+                  Modules:
+                </Heading>
+                <Accordion allowMultiple>
+                  {store.root.data.map((dataId) => (
+                    <AccordionItem key={dataId}>
+                      <AccordionHeader>{store[dataId].key}</AccordionHeader>
+                      <AccordionPanel>
+                        <AttributesList parentId={dataId} />
+                      </AccordionPanel>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </SimpleGrid>
+            </section>
+            <section>
+              <pre className="card">
+                <code>
+                  {JSON.stringify(
+                    getValue(store.root, store).modules,
+                    undefined,
+                    2,
+                  )}
+                </code>
+                <code>{JSON.stringify(store, undefined, 2)}</code>
+              </pre>
+            </section>
+          </main>
+        </DataProvider>
       </ThemeProvider>
 
       <style jsx>{`
