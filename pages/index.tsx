@@ -9,6 +9,8 @@ import {
   FormLabel,
   Switch,
   Select,
+  Button,
+  ButtonGroup,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -260,9 +262,14 @@ const AttributesList = ({ parentId }) => {
 }
 
 const Home = () => {
-  const [store, dispatch] = useReducer<Reducer>(reducer, {
-    root: { type: 'root', key: 'modules', id: 'root', data: [] },
-  })
+  const saved_config =
+    typeof window !== 'undefined' && window.localStorage.getItem('store_backup')
+  const [store, dispatch] = useReducer<Reducer>(
+    reducer,
+    JSON.parse(saved_config) || {
+      root: { type: 'root', key: 'modules', id: 'root', data: [] },
+    },
+  )
   return (
     <div className="container">
       <Head>
@@ -273,6 +280,23 @@ const Home = () => {
         <CSSReset />
         <DataProvider value={{ store, dispatch }}>
           <main>
+            <ButtonGroup>
+              <Button
+                onClick={() =>
+                  window.localStorage.setItem(
+                    'store_backup',
+                    JSON.stringify(store),
+                  )
+                }
+              >
+                Save Config
+              </Button>
+              <Button
+                onClick={() => window.localStorage.removeItem('store_backup')}
+              >
+                Reset config
+              </Button>
+            </ButtonGroup>
             <section className="card">
               <SimpleGrid columns={1} spacing={4}>
                 <Stack>
@@ -297,7 +321,14 @@ const Home = () => {
                 <Accordion allowMultiple>
                   {store.root.data.map((dataId) => (
                     <AccordionItem key={dataId}>
-                      <AccordionHeader>{store[dataId].key}</AccordionHeader>
+                      <AccordionHeader>
+                        <Box flex="1" textAlign="left">
+                          <Heading as="h5" size="xs">
+                            {store[dataId].key}
+                          </Heading>
+                        </Box>
+                        <AccordionIcon />
+                      </AccordionHeader>
                       <AccordionPanel>
                         <AttributesList parentId={dataId} />
                       </AccordionPanel>

@@ -60,12 +60,12 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
     case ActionType.REMOVE_DATALINK_EVENT: {
       const { parentId, id } = payload
       const { [id]: removed, ...newState } = prevState
-      const parent = prevState[parentId]
+      const { data, ...parent } = prevState[parentId]
       return {
         ...newState,
         [parentId]: {
           ...parent,
-          data: parent.data.filter((link) => link !== id),
+          data: data.filter((link) => link !== id),
         },
       }
     }
