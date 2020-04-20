@@ -26,240 +26,399 @@ import {
   Divider,
   RadioGroup,
   Radio,
+  Text,
 } from '@chakra-ui/core'
-import deepmerge from 'deepmerge'
 import { DataProvider, useData } from '../lib/DataContext'
 import { AddType } from '../components/AddType'
 import { config, Key } from '../lib/config'
 import { walkStore } from '../lib/walkStore'
-import { ActionType, Reducer, reducer, generateId } from '../reducers'
+import { useDispatch } from '../hooks/useDispatch'
+import { ActionType, DataType, Reducer, reducer } from '../reducers'
+import { AttributesList } from '../components/AttributesList'
 
-const AttributeSettings = ({ id }) => {
-  const { store, dispatch } = useData()
-  const { type, value, key, data } = store[id]
-  const { attributes } = config[key]
+// const AttributeSettings = ({ id }) => {
+//   const { store, dispatch } = useData()
+//   const { type, value, key, data } = store[id]
+//   const { attributes } = config[key]
 
-  if (type === 'select') {
-    return (
-      <Select
-        id={`${id}-values`}
-        name={`${id}-values`}
-        onChange={(event) =>
-          dispatch({
-            type: ActionType.UPDATE_VALUE_EVENT,
-            payload: {
-              id,
-              value: event.target.value,
-            },
-          })
-        }
-        value={value as string}
-      >
-        {(attributes as readonly Key[]).map((v) => (
-          <option key={v} value={v}>
-            {v}
-          </option>
-        ))}
-      </Select>
-    )
-  }
-  if (type === 'number') {
-    return (
-      <NumberInput
-        value={value as number}
-        min={attributes[0] as number}
-        max={attributes[1] as number}
-        onChange={(newVal) =>
-          dispatch({
-            type: ActionType.UPDATE_VALUE_EVENT,
-            payload: {
-              id,
-              value: newVal,
-            },
-          })
-        }
-      >
-        <NumberInputField />
-        <NumberInputStepper>
-          <NumberIncrementStepper />
-          <NumberDecrementStepper />
-        </NumberInputStepper>
-      </NumberInput>
-    )
-  }
-  if (type === 'checkbox') {
-    return (
-      <Checkbox
-        isChecked={value as boolean}
-        onChange={() =>
-          dispatch({
-            type: ActionType.UPDATE_VALUE_EVENT,
-            payload: {
-              id,
-              value: !value,
-            },
-          })
-        }
-      >
-        {key}
-      </Checkbox>
-    )
-  }
-  if (type === 'grid') {
-    return (
-      <SimpleGrid columns={1} spacing={2}>
-        <Stack>
-          <FormLabel>Add column</FormLabel>
-          <AddType
-            types={attributes as readonly Key[]}
-            onAdd={({ type: columnType }) =>
-              dispatch({
-                type: ActionType.ADD_DATALINK_EVENT,
-                payload: {
-                  parentId: id,
-                  id: generateId(columnType),
-                  key: columnType as Key,
-                },
-              })
-            }
-          />
-        </Stack>
-        {Array.isArray(data) && data.length > 0 && (
-          <Heading as="h4" size="xs">
-            Columns:
-          </Heading>
-        )}
-        <Accordion allowMultiple>
-          {Array.isArray(data) &&
-            data.map((valueId) => (
-              <AccordionItem key={valueId}>
-                <AccordionHeader>
-                  <Box flex="1" textAlign="left">
-                    <Heading as="h5" size="xs">
-                      {store[valueId].key}
-                    </Heading>
-                  </Box>
-                  <AccordionIcon />
-                </AccordionHeader>
-                <AccordionPanel>
-                  <AttributesList parentId={valueId} />
-                </AccordionPanel>
-              </AccordionItem>
-            ))}
-        </Accordion>
-      </SimpleGrid>
-    )
-  }
-  if (type === 'component-selection') {
-    if (data.length === 0) {
-      dispatch({
-        type: ActionType.ADD_DATALINK_EVENT,
-        payload: {
-          parentId: id,
-          id: generateId(value as string),
-          key: value as Key,
-        },
-      })
-    }
+//   if (type === 'select') {
+//     return (
+//       <Select
+//         id={`${id}-values`}
+//         name={`${id}-values`}
+//         onChange={(event) =>
+//           dispatch({
+//             type: ActionType.UPDATE_VALUE_EVENT,
+//             payload: {
+//               id,
+//               value: event.target.value,
+//             },
+//           })
+//         }
+//         value={value as string}
+//       >
+//         {(attributes as readonly Key[]).map((v) => (
+//           <option key={v} value={v}>
+//             {v}
+//           </option>
+//         ))}
+//       </Select>
+//     )
+//   }
+//   if (type === 'number') {
+//     return (
+//       <NumberInput
+//         value={value as number}
+//         min={attributes[0] as number}
+//         max={attributes[1] as number}
+//         onChange={(newVal) =>
+//           dispatch({
+//             type: ActionType.UPDATE_VALUE_EVENT,
+//             payload: {
+//               id,
+//               value: newVal,
+//             },
+//           })
+//         }
+//       >
+//         <NumberInputField />
+//         <NumberInputStepper>
+//           <NumberIncrementStepper />
+//           <NumberDecrementStepper />
+//         </NumberInputStepper>
+//       </NumberInput>
+//     )
+//   }
+//   if (type === 'checkbox') {
+//     return (
+//       <Checkbox
+//         isChecked={value as boolean}
+//         onChange={() =>
+//           dispatch({
+//             type: ActionType.UPDATE_VALUE_EVENT,
+//             payload: {
+//               id,
+//               value: !value,
+//             },
+//           })
+//         }
+//       >
+//         {key}
+//       </Checkbox>
+//     )
+//   }
+//   if (type === 'grid') {
+//     return (
+//       <SimpleGrid columns={1} spacing={2}>
+//         <Stack>
+//           <FormLabel>Add column</FormLabel>
+//           <AddType
+//             types={attributes as readonly Key[]}
+//             onAdd={({ type: columnType }) =>
+//               dispatch({
+//                 type: ActionType.ADD_DATALINK_EVENT,
+//                 payload: {
+//                   parentId: id,
+//                   key: columnType as Key,
+//                 },
+//               })
+//             }
+//           />
+//         </Stack>
+//         {Array.isArray(data) && data.length > 0 && (
+//           <Heading as="h4" size="xs">
+//             Columns:
+//           </Heading>
+//         )}
+//         <Accordion allowMultiple>
+//           {Array.isArray(data) &&
+//             data.map((valueId) => (
+//               <AccordionItem key={valueId}>
+//                 <AccordionHeader>
+//                   <Box flex="1" textAlign="left">
+//                     <Heading as="h5" size="xs">
+//                       {store[valueId].key}
+//                     </Heading>
+//                   </Box>
+//                   <AccordionIcon />
+//                 </AccordionHeader>
+//                 <AccordionPanel>
+//                   <AttributesList parentId={valueId} />
+//                 </AccordionPanel>
+//               </AccordionItem>
+//             ))}
+//         </Accordion>
+//       </SimpleGrid>
+//     )
+//   }
+//   if (type === 'component-selection') {
+//     if (data.length === 0) {
+//       dispatch({
+//         type: ActionType.ADD_DATALINK_EVENT,
+//         payload: {
+//           parentId: id,
+//           key: value as Key,
+//         },
+//       })
+//     }
 
-    return (
-      <SimpleGrid columns={1} spacing={2}>
-        <RadioGroup
-          onChange={(e) => {
-            dispatch({
-              type: ActionType.UPDATE_VALUE_EVENT,
-              payload: { id, value: e.target.value },
-            })
-            dispatch({
-              type: ActionType.REMOVE_DATALINK_EVENT,
-              payload: { parentId: id, id: data[0] },
-            })
-          }}
-          value={value as string}
-        >
-          {(attributes as readonly Key[]).map((component) => (
-            <Radio value={component} key={component}>
-              {component}
-            </Radio>
-          ))}
-        </RadioGroup>
-        {Array.isArray(data) &&
-          data.map((valueId) => (
-            <Fragment key={valueId}>
-              <Heading as="h5" size="xs">
-                {store[valueId].key}
-              </Heading>
-              <AttributesList parentId={valueId} />
-            </Fragment>
-          ))}
-      </SimpleGrid>
-    )
-  }
-  if (type === 'component') {
-    return (
-      <Accordion allowMultiple>
-        <AccordionItem>
-          <AccordionHeader>{key}</AccordionHeader>
-          <AccordionPanel>
-            <AttributesList parentId={id} />
-          </AccordionPanel>
-        </AccordionItem>
-      </Accordion>
-    )
-  }
-  // return store[id]
-}
+//     return (
+//       <SimpleGrid columns={1} spacing={2}>
+//         <RadioGroup
+//           onChange={(e) => {
+//             dispatch({
+//               type: ActionType.UPDATE_VALUE_EVENT,
+//               payload: { id, value: e.target.value },
+//             })
+//             dispatch({
+//               type: ActionType.REMOVE_DATALINK_EVENT,
+//               payload: { parentId: id, id: data[0] },
+//             })
+//           }}
+//           value={value as string}
+//         >
+//           {(attributes as readonly Key[]).map((component) => (
+//             <Radio value={component} key={component}>
+//               {component}
+//             </Radio>
+//           ))}
+//         </RadioGroup>
+//         {Array.isArray(data) &&
+//           data.map((valueId) => (
+//             <Fragment key={valueId}>
+//               <Heading as="h5" size="xs">
+//                 {store[valueId].key}
+//               </Heading>
+//               <AttributesList parentId={valueId} />
+//             </Fragment>
+//           ))}
+//       </SimpleGrid>
+//     )
+//   }
+//   if (type === 'component') {
+//     return (
+//       <Accordion allowMultiple>
+//         <AccordionItem>
+//           <AccordionHeader>{key}</AccordionHeader>
+//           <AccordionPanel>
+//             <AttributesList parentId={id} />
+//           </AccordionPanel>
+//         </AccordionItem>
+//       </Accordion>
+//     )
+//   }
+//   // return store[id]
+// }
 
-const AttributesList = ({ parentId }) => {
-  const { store, dispatch } = useData()
-  const { key } = store[parentId]
-  const { attributes } = config[key]
-  return (
-    <Stack spacing={4}>
-      {(attributes as readonly Key[]).map((attribute) => {
-        const htmlId = `${parentId}-${attribute}`
-        const id = store[parentId].data.find(
-          (dataId) => store[dataId].key === attribute,
-        )
-        return (
-          <Stack spacing={2} key={htmlId}>
-            <Stack isInline>
-              <Switch
-                id={htmlId}
-                name={attribute}
-                onChange={(e) => {
-                  if (
-                    (e as React.ChangeEvent<HTMLInputElement>).target.checked
-                  ) {
-                    dispatch({
-                      type: ActionType.ADD_DATALINK_EVENT,
-                      payload: {
-                        parentId,
-                        id: generateId(attribute),
-                        key: attribute,
-                      },
-                    })
-                  } else {
-                    dispatch({
-                      type: ActionType.REMOVE_DATALINK_EVENT,
-                      payload: {
-                        parentId,
-                        id,
-                      },
-                    })
-                  }
-                }}
-              />
-              <FormLabel htmlFor={htmlId}>{attribute}</FormLabel>
-            </Stack>
-            {id && <AttributeSettings id={id} />}
-            <Divider />
-          </Stack>
-        )
-      })}
-    </Stack>
-  )
-}
+// const AttributeSettings = ({ parentId, attribute: key }) => {
+//   const { store, dispatch } = useData()
+//   const { data: parentData } = store[parentId]
+
+//   const id = parentData.find((dataId) => store[dataId].key === key)
+//   const { type, value, data = [] } = id ? store[id] : config[key]
+//   const { attributes } = config[key]
+
+//   const changeHandler = useDispatch({ parentId, key })
+
+//   if (type === DataType.SELECT) {
+//     return (
+//       <Select
+//         id={`${id}-values`}
+//         name={`${id}-values`}
+//         onChange={(event) => changeHandler(event.target.value)}
+//         value={value as string}
+//       >
+//         {(attributes as readonly Key[]).map((v) => (
+//           <option key={v} value={v}>
+//             {v}
+//           </option>
+//         ))}
+//       </Select>
+//     )
+//   }
+//   if (type === DataType.NUMBER) {
+//     return (
+//       <NumberInput
+//         value={value as number}
+//         min={attributes[0] as number}
+//         max={attributes[1] as number}
+//         onChange={(newVal) => changeHandler(newVal)}
+//       >
+//         <NumberInputField />
+//         <NumberInputStepper>
+//           <NumberIncrementStepper />
+//           <NumberDecrementStepper />
+//         </NumberInputStepper>
+//       </NumberInput>
+//     )
+//   }
+//   if (type === DataType.CHECKBOX) {
+//     return (
+//       <Checkbox
+//         isChecked={value as boolean}
+//         onChange={() => changeHandler(!value)}
+//       >
+//         {key}
+//       </Checkbox>
+//     )
+//   }
+//   if (type === DataType.GRID) {
+//     return (
+//       <SimpleGrid columns={1} spacing={2}>
+//         <Stack>
+//           <FormLabel>Add column</FormLabel>
+//           <AddType
+//             types={attributes as readonly Key[]}
+//             onAdd={({ type: columnType }) =>
+//               dispatch({
+//                 type: ActionType.ADD_NESTED_DATALINK_EVENT,
+//                 payload: {
+//                   parentId,
+//                   key,
+//                   key2: columnType as Key,
+//                 },
+//               })
+//             }
+//           />
+//         </Stack>
+//         {Array.isArray(data) && data.length > 0 && (
+//           <Heading as="h4" size="xs">
+//             Columns:
+//           </Heading>
+//         )}
+//         <Accordion allowMultiple>
+//           {Array.isArray(data) &&
+//             data.map((valueId) => (
+//               <AccordionItem key={valueId}>
+//                 <AccordionHeader>
+//                   <Box flex="1" textAlign="left">
+//                     <Heading as="h5" size="xs">
+//                       {store[valueId].key}
+//                     </Heading>
+//                   </Box>
+//                   <AccordionIcon />
+//                 </AccordionHeader>
+//                 <AccordionPanel>
+//                   <AttributesList parentId={valueId} />
+//                 </AccordionPanel>
+//               </AccordionItem>
+//             ))}
+//         </Accordion>
+//       </SimpleGrid>
+//     )
+//   }
+//   if (type === DataType.COMPONENT_SELECTION) {
+//     if (data.length === 0) {
+//       dispatch({
+//         type: ActionType.ADD_NESTED_DATALINK_EVENT,
+//         payload: {
+//           parentId,
+//           key: key,
+//           key2: value as Key,
+//         },
+//       })
+//       return null
+//     }
+
+//     return (
+//       <SimpleGrid columns={1} spacing={2}>
+//         <RadioGroup
+//           onChange={(e) => {
+//             dispatch({
+//               type: ActionType.UPDATE_VALUE_EVENT,
+//               payload: { id, value: e.target.value },
+//             })
+//             dispatch({
+//               type: ActionType.REMOVE_DATALINK_EVENT,
+//               payload: { parentId: id, id: data[0] },
+//             })
+//           }}
+//           value={value as string}
+//         >
+//           {(attributes as readonly Key[]).map((component) => (
+//             <Radio value={component} key={component}>
+//               {component}
+//             </Radio>
+//           ))}
+//         </RadioGroup>
+//         {Array.isArray(data) &&
+//           data.map((valueId) => (
+//             <Fragment key={valueId}>
+//               <Heading as="h5" size="xs">
+//                 {store[valueId].key}
+//               </Heading>
+//               <AttributesList parentId={valueId} />
+//             </Fragment>
+//           ))}
+//       </SimpleGrid>
+//     )
+//   }
+//   if (type === DataType.COMPONENT) {
+//     return (
+//       <Accordion allowMultiple>
+//         <AccordionItem>
+//           <AccordionHeader>{key}</AccordionHeader>
+//           <AccordionPanel>
+//             <AttributesList parentId={id} />
+//           </AccordionPanel>
+//         </AccordionItem>
+//       </Accordion>
+//     )
+//   }
+//   // return store[id]
+// }
+
+// const AttributesList = ({ parentId }) => {
+//   const { store, dispatch } = useData()
+//   const { key } = store[parentId]
+//   const { attributes } = config[key]
+//   return (
+//     <Stack spacing={4}>
+//       {(attributes as readonly Key[]).map((attribute) => {
+//         const htmlId = `${parentId}-${attribute}`
+//         // const id = store[parentId].data.find(
+//         //   (dataId) => store[dataId].key === attribute,
+//         // )
+//         return (
+//           <Stack spacing={2} key={htmlId}>
+//             <Stack isInline justify="space-between" align="center">
+//               <Text>{attribute}</Text>
+//               <AttributeSettings parentId={parentId} attribute={attribute} />
+//               {/* <Switch
+//                 id={htmlId}
+//                 name={attribute}
+//                 onChange={(e) => {
+//                   if (
+//                     (e as React.ChangeEvent<HTMLInputElement>).target.checked
+//                   ) {
+//                     dispatch({
+//                       type: ActionType.ADD_DATALINK_EVENT,
+//                       payload: {
+//                         parentId,
+//                         key: attribute,
+//                       },
+//                     })
+//                   } else {
+//                     dispatch({
+//                       type: ActionType.REMOVE_DATALINK_EVENT,
+//                       payload: {
+//                         parentId,
+//                         id,
+//                       },
+//                     })
+//                   }
+//                 }}
+//               />
+//               <FormLabel htmlFor={htmlId}>{attribute}</FormLabel> */}
+//             </Stack>
+//             {/* {id && <AttributeSettings id={id} />} */}
+//             <Divider />
+//           </Stack>
+//         )
+//       })}
+//     </Stack>
+//   )
+// }
 
 const Home = () => {
   const saved_config =
@@ -267,7 +426,7 @@ const Home = () => {
   const [store, dispatch] = useReducer<Reducer>(
     reducer,
     JSON.parse(saved_config) || {
-      root: { type: 'root', key: 'modules', id: 'root', data: [] },
+      root: { type: DataType.ROOT, key: 'modules', id: 'root', data: [] },
     },
   )
   return (
@@ -308,7 +467,6 @@ const Home = () => {
                         type: ActionType.ADD_DATALINK_EVENT,
                         payload: {
                           parentId: 'root',
-                          id: generateId(type),
                           key: type as Key,
                         },
                       })
@@ -330,7 +488,7 @@ const Home = () => {
                         <AccordionIcon />
                       </AccordionHeader>
                       <AccordionPanel>
-                        <AttributesList parentId={dataId} />
+                        <AttributesList id={dataId} />
                       </AccordionPanel>
                     </AccordionItem>
                   ))}

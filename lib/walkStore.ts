@@ -1,4 +1,4 @@
-import { ModuleStore } from '../reducers'
+import { DataType, ModuleStore } from '../reducers'
 
 export function walkStore(store: ModuleStore, id?: string) {
   let config: { [key: string]: any } = {}
@@ -7,20 +7,20 @@ export function walkStore(store: ModuleStore, id?: string) {
   const links = current.data.map((id) => walkStore(store, id))
 
   switch (current.type) {
-    case 'grid':
+    case DataType.GRID:
       config[current.key] = links
       break
-    case 'module':
-    case 'component':
+    case DataType.MODULE:
+    case DataType.COMPONENT:
       config[current.key] = links.reduce((c, link) => ({ ...c, ...link }), {})
       break
-    case 'column':
+    case DataType.COLUMN:
       config = links.reduce((c, link) => ({ ...c, ...link }), {
         type: current.key,
         ...config,
       })
       break
-    case 'component-selection': {
+    case DataType.COMPONENT_SELECTION: {
       const { [current.value as string]: component } = links.reduce(
         (c, link) => ({ ...c, ...link }),
         config,

@@ -3,27 +3,30 @@ import { Key, config } from '../lib/config'
 
 export enum ActionType {
   ADD_DATALINK_EVENT,
+  ADD_NESTED_DATALINK_EVENT,
   REMOVE_DATALINK_EVENT,
   UPDATE_VALUE_EVENT,
 }
 
-type DataType =
-  | 'root'
-  | 'module'
-  | 'grid'
-  | 'column'
-  | 'component-selection'
-  | 'component'
-  | 'number'
-  | 'select'
-  | 'checkbox'
+export enum DataType {
+  ROOT = 'ROOT',
+  MODULE = 'MODULE',
+  GRID = 'GRID',
+  COLUMN = 'COLUMN',
+  COMPONENT_SELECTION = 'COMPONENT_SELECTIN',
+  COMPONENT = 'COMPONENT',
+  NUMBER = 'NUMBER',
+  SELECT = 'SELECT',
+  CHECKBOX = 'CHECKBOX',
+}
 
 export type Action = {
   type: ActionType
   payload: {
     parentId?: string
-    id: string
+    id?: string
     key?: Key
+    key2?: Key
     value?: string | number | boolean
   }
 }
@@ -40,21 +43,46 @@ export type ModuleStore = {
 
 export type Reducer = (prevState: ModuleStore, action: Action) => ModuleStore
 
-export const generateId = (type: string) => `${type}-${generate()}`
+export const generateId = (key: string) => `${key}-${generate()}`
 
 export const reducer: Reducer = (prevState, { type, payload }) => {
+  console.log(prevState)
   switch (type) {
     case ActionType.ADD_DATALINK_EVENT: {
-      const { parentId, id, key } = payload
+      const { parentId, key, value } = payload
       const dataSet = prevState[parentId]
       const { attributes: _, ...initialValue } = config[key]
+      const id = generateId(key)
       return {
         ...prevState,
         [parentId]: {
           ...dataSet,
           data: [...dataSet.data, id],
         },
-        [id]: { ...initialValue, id, data: [] },
+        [id]: { ...initialValue, ...(value ? { value } : {}), id, data: [] },
+      }
+    }
+    case ActionType.ADD_NESTED_DATALINK_EVENT: {
+      console.log('Payload', payload)
+      const { parentId, key, key2, value } = payload
+      const dataSet = prevState[parentId]
+      const { attributes: _, ...initialValue } = config[key]
+      const { attributes: _2, ...initialValue2 } = config[key2]
+      const id = generateId(key)
+      const id2 = generateId(key2)
+      return {
+        ...prevState,
+        [parentId]: {
+          ...dataSet,
+          data: [...dataSet.data, id],
+        },
+        [id]: { ...initialValue, id, data: [id2] },
+        [id2]: {
+          ...initialValue2,
+          ...(value ? { value } : {}),
+          id: id2,
+          data: [],
+        },
       }
     }
     case ActionType.REMOVE_DATALINK_EVENT: {
