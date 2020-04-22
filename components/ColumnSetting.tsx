@@ -13,7 +13,7 @@ export const ColumnSetting = ({ id, ...rest }) => {
       <Stack isInline justify="space-between" align="center">
         <Text>{key}</Text>
         <Button size="sm" onClick={() => setEdit((val) => !val)}>
-          Edit
+          {isEdit ? 'Close' : 'Edit'}
         </Button>
       </Stack>
       {isEdit && <AttributesList id={id} />}

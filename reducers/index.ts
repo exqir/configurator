@@ -3,9 +3,9 @@ import { Key, config } from '../lib/config'
 
 export enum ActionType {
   ADD_DATALINK_EVENT,
-  ADD_NESTED_DATALINK_EVENT,
   REMOVE_DATALINK_EVENT,
   UPDATE_VALUE_EVENT,
+  REPLACE_DATALINK_EVENT,
 }
 
 export enum DataType {
@@ -50,39 +50,16 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
   switch (type) {
     case ActionType.ADD_DATALINK_EVENT: {
       const { parentId, key, value } = payload
-      const dataSet = prevState[parentId]
+      const { data, ...parent } = prevState[parentId]
       const { attributes: _, ...initialValue } = config[key]
       const id = generateId(key)
       return {
         ...prevState,
         [parentId]: {
-          ...dataSet,
-          data: [...dataSet.data, id],
+          ...parent,
+          data: [...data, id],
         },
         [id]: { ...initialValue, ...(value ? { value } : {}), id, data: [] },
-      }
-    }
-    case ActionType.ADD_NESTED_DATALINK_EVENT: {
-      console.log('Payload', payload)
-      const { parentId, key, key2, value } = payload
-      const dataSet = prevState[parentId]
-      const { attributes: _, ...initialValue } = config[key]
-      const { attributes: _2, ...initialValue2 } = config[key2]
-      const id = generateId(key)
-      const id2 = generateId(key2)
-      return {
-        ...prevState,
-        [parentId]: {
-          ...dataSet,
-          data: [...dataSet.data, id],
-        },
-        [id]: { ...initialValue, id, data: [id2] },
-        [id2]: {
-          ...initialValue2,
-          ...(value ? { value } : {}),
-          id: id2,
-          data: [],
-        },
       }
     }
     case ActionType.REMOVE_DATALINK_EVENT: {
@@ -105,6 +82,21 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
           ...prevState[id],
           value,
         },
+      }
+    }
+    case ActionType.REPLACE_DATALINK_EVENT: {
+      const { parentId, key } = payload
+      const { data, ...parent } = prevState[parentId]
+      const { [data[0]]: removed, ...newState } = prevState
+      const { attributes: _, ...initialValue } = config[key]
+      const id = generateId(key)
+      return {
+        ...newState,
+        [parentId]: {
+          ...parent,
+          data: [id],
+        },
+        [id]: { ...initialValue, id, data: [] },
       }
     }
     default:
