@@ -36,8 +36,8 @@ export const ComponentSelectionSetting = ({
         <Text>{key}</Text>
         <IconButton
           size="sm"
-          icon={isOpen ? 'close' : 'add'}
-          aria-label={isOpen ? 'Close column selection' : 'Add column'}
+          icon={isOpen ? 'check' : 'edit'}
+          aria-label={isOpen ? 'Done editing component' : 'Edit component'}
           onClick={() => {
             setOpen((val) => !val)
 

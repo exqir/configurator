@@ -4,12 +4,12 @@ import { useData } from '../lib/DataContext'
 import { config, Key } from '../lib/config'
 import { AttributeSetting } from './AttributeSetting'
 
-export const AttributesList = ({ id }) => {
+export const AttributesList = ({ id, ...rest }) => {
   const { store } = useData()
   const { key } = store[id]
   const { attributes } = config[key]
   return (
-    <Stack spacing={4}>
+    <Stack spacing={4} {...rest}>
       {(attributes as readonly Key[]).map((attribute) => {
         return (
           <Box key={attribute}>
