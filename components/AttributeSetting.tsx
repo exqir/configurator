@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import {
   Accordion,
   AccordionItem,
   AccordionHeader,
   AccordionPanel,
+  Stack,
 } from '@chakra-ui/core'
 import { DataType } from '../reducers'
 import { CheckboxSetting } from './CheckboxSetting'
@@ -13,41 +14,25 @@ import { NumberSetting } from './NumberSetting'
 import { SelectSetting } from './SelectSetting'
 import { ComponentSelectionSetting } from './ComponentSelectionSetting'
 import { ComponentLinkSetting } from './ComponentLinkSetting'
+import { ComponentSetting } from './ComponentSetting'
+import { ColumnSetting } from './ColumnSetting'
 import { useId } from '../hooks/useId'
 
-export const AttributeSetting = ({ parentId, attribute: key }) => {
-  const { id, type } = useId({ parentId, key })
+const Settings = {
+  [DataType.SELECT]: SelectSetting,
+  [DataType.NUMBER]: NumberSetting,
+  [DataType.CHECKBOX]: CheckboxSetting,
+  [DataType.GRID]: GridSetting,
+  [DataType.COLUMN]: ColumnSetting,
+  [DataType.COMPONENT_SELECTION]: ComponentSelectionSetting,
+  [DataType.COMPONENT_LINK]: ComponentLinkSetting,
+  [DataType.COMPONENT]: ComponentSetting,
+}
 
-  if (type === DataType.SELECT) {
-    return <SelectSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.NUMBER) {
-    return <NumberSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.CHECKBOX) {
-    return <CheckboxSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.GRID) {
-    return <GridSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.COMPONENT_SELECTION) {
-    return <ComponentSelectionSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.COMPONENT_LINK) {
-    return <ComponentLinkSetting parentId={parentId} attribute={key} />
-  }
-  if (type === DataType.COMPONENT) {
-    console.log(parentId, key, id)
-    return (
-      <Accordion allowMultiple>
-        <AccordionItem>
-          <AccordionHeader>{key}</AccordionHeader>
-          <AccordionPanel>
-            <AttributesList id={parentId} />
-          </AccordionPanel>
-        </AccordionItem>
-      </Accordion>
-    )
-  }
-  // return store[id]
+export const AttributeSetting = ({ parentId, attribute: key }) => {
+  const { type } = useId({ parentId, key })
+
+  const Setting = Settings[type]
+
+  return <Setting parentId={parentId} attribute={key} />
 }

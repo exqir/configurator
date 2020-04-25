@@ -4,7 +4,12 @@ export const config = {
   modules: {
     key: 'modules',
     type: DataType.ROOT,
-    attributes: ['cart-horizontal', 'progress-stepper'],
+    attributes: ['cart-horizontal', 'progress-stepper', 'components'],
+  },
+  components: {
+    key: 'components',
+    type: DataType.MODULE,
+    attributes: ['select', 'quantity_stepper', 'text'],
   },
   'cart-horizontal': {
     key: 'cart-horizontal',

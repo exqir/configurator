@@ -16,9 +16,10 @@ import {
 import { DataProvider } from '../lib/DataContext'
 import { AddType } from '../components/AddType'
 import { config, Key } from '../lib/config'
-import { walkStore } from '../lib/walkStore'
 import { ActionType, DataType, Reducer, reducer } from '../reducers'
 import { AttributesList } from '../components/AttributesList'
+import { Debug } from '../components/Debug'
+import { Config } from '../components/Config'
 
 const Home = () => {
   const saved_config =
@@ -101,15 +102,8 @@ const Home = () => {
               </Box>
               <Box gridArea="2 / 2 / 3 / 3">
                 <section>
-                  <pre className="card">
-                    <code>
-                      {JSON.stringify(walkStore(store), undefined, 2)}
-                    </code>
-                  </pre>
-                  Debug:
-                  <pre className="card">
-                    <code>{JSON.stringify(store, undefined, 2)}</code>
-                  </pre>
+                  <Config />
+                  <Debug />
                 </section>
               </Box>
             </Grid>
@@ -136,18 +130,20 @@ const Home = () => {
           align-items: flex-start;
           width: 100%;
         }
+      `}</style>
 
-        pre {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
+      <style jsx global>{`
+        html,
+        body {
+          padding: 0;
           margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+            sans-serif;
         }
 
-        code {
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+        * {
+          box-sizing: border-box;
         }
 
         .card {
@@ -177,20 +173,18 @@ const Home = () => {
           font-size: 1.25rem;
           line-height: 1.5;
         }
-      `}</style>
 
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
+        pre {
+          background: #fafafa;
+          border-radius: 5px;
+          padding: 0.75rem;
           margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
         }
 
-        * {
-          box-sizing: border-box;
+        code {
+          font-size: 1.1rem;
+          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
+            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
         }
       `}</style>
     </div>
