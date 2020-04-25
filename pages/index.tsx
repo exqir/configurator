@@ -151,6 +151,7 @@ const Home = () => {
         }
 
         .card {
+          width: 100%;
           padding: 1.5rem;
           text-align: left;
           color: inherit;

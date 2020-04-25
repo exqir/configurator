@@ -28,6 +28,19 @@ export function walkStore(store: ModuleStore, id?: string) {
       config[current.key] = { component: current.value, ...component }
       break
     }
+    case DataType.COMPONENT_LINK: {
+      const componentId = current.data[0]
+      if (componentId) {
+        const { key } = store[componentId]
+        config[current.key] = links.reduce(
+          (c, { [key]: comp }) => ({ ...c, ...comp }),
+          {},
+        )
+      } else {
+        config[current.key] = {}
+      }
+      break
+    }
     default: {
       if (current.value != null) {
         config[current.key] = current.value

@@ -12,6 +12,7 @@ import { GridSetting } from './GridSetting'
 import { NumberSetting } from './NumberSetting'
 import { SelectSetting } from './SelectSetting'
 import { ComponentSelectionSetting } from './ComponentSelectionSetting'
+import { ComponentLinkSetting } from './ComponentLinkSetting'
 import { useId } from '../hooks/useId'
 
 export const AttributeSetting = ({ parentId, attribute: key }) => {
@@ -32,13 +33,17 @@ export const AttributeSetting = ({ parentId, attribute: key }) => {
   if (type === DataType.COMPONENT_SELECTION) {
     return <ComponentSelectionSetting parentId={parentId} attribute={key} />
   }
+  if (type === DataType.COMPONENT_LINK) {
+    return <ComponentLinkSetting parentId={parentId} attribute={key} />
+  }
   if (type === DataType.COMPONENT) {
+    console.log(parentId, key, id)
     return (
       <Accordion allowMultiple>
         <AccordionItem>
           <AccordionHeader>{key}</AccordionHeader>
           <AccordionPanel>
-            <AttributesList id={id} />
+            <AttributesList id={parentId} />
           </AccordionPanel>
         </AccordionItem>
       </Accordion>

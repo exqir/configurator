@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import { Stack, SimpleGrid, Button, IconButton, Text } from '@chakra-ui/core'
 import { useData } from '../lib/DataContext'
 import { config, Key } from '../lib/config'
@@ -18,7 +18,6 @@ export const ComponentSelectionSetting = ({
   const { dispatch } = useData()
   const [isOpen, setOpen] = useState(false)
   const { id, value, data } = useId({ parentId, key })
-  console.log(parentId, key, id)
   const { attributes } = config[key]
 
   useEffect(() => {
@@ -51,24 +50,26 @@ export const ComponentSelectionSetting = ({
         />
       </Stack>
       {isOpen && (
-        <SimpleGrid columns={2} spacing={4}>
-          {(attributes as readonly Key[]).map((column) => (
-            <Button
-              key={column}
-              onClick={() => {
-                dispatch({
-                  type: ActionType.UPDATE_VALUE_EVENT,
-                  payload: { id, value: column },
-                })
-              }}
-            >
-              {column}
-            </Button>
-          ))}
+        <Fragment>
+          <SimpleGrid columns={2} spacing={4}>
+            {(attributes as readonly Key[]).map((column) => (
+              <Button
+                key={column}
+                onClick={() => {
+                  dispatch({
+                    type: ActionType.UPDATE_VALUE_EVENT,
+                    payload: { id, value: column },
+                  })
+                }}
+              >
+                {column}
+              </Button>
+            ))}
+          </SimpleGrid>
           {data.map((componentId) => (
             <AttributesList key={componentId} id={componentId} />
           ))}
-        </SimpleGrid>
+        </Fragment>
       )}
     </Stack>
   )

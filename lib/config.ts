@@ -9,7 +9,7 @@ export const config = {
   'cart-horizontal': {
     key: 'cart-horizontal',
     type: DataType.MODULE,
-    attributes: ['hideHeadlines', 'cartColumns'],
+    attributes: ['module_headline', 'hideHeadlines', 'cartColumns'],
   },
   'progress-stepper': {
     key: 'progress-stepper',
@@ -100,6 +100,16 @@ export const config = {
     type: DataType.CHECKBOX,
     value: true,
     attributes: [true, false],
+  },
+  module_headline: {
+    key: 'module_headline',
+    type: DataType.COMPONENT_LINK,
+    attributes: ['text'],
+  },
+  text: {
+    key: 'text',
+    type: DataType.COMPONENT,
+    attributes: ['component_type'],
   },
 } as const
 
