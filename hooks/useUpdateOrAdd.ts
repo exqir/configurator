@@ -1,15 +1,15 @@
 import { Key } from '../lib/config'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { ActionType } from '../reducers'
 
-export const useDispatch = ({
+export const useUpdateOrAdd = ({
   parentId,
   key,
 }: {
   parentId: string
   key: Key
 }) => {
-  const { store, dispatch } = useData()
+  const { store, dispatch } = useStore()
 
   const linkId = store[parentId].data.find(
     (linkId) => store[linkId].key === key,

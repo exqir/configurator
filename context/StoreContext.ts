@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 import { ModuleStore, Action } from '../reducers'
 
-const DataContext = createContext<{
+const StoreContext = createContext<{
   store: ModuleStore
   dispatch: (action: Action) => void
 }>({
@@ -9,5 +9,5 @@ const DataContext = createContext<{
   dispatch: () => {},
 })
 
-export const DataProvider = DataContext.Provider
-export const useData = () => useContext(DataContext)
+export const StoreProvider = StoreContext.Provider
+export const useStore = () => useContext(StoreContext)

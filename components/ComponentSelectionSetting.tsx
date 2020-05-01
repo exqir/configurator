@@ -1,23 +1,19 @@
 import React, { useState, useEffect, Fragment } from 'react'
 import { Stack, SimpleGrid, Button, IconButton, Text } from '@chakra-ui/core'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
 import { ActionType } from '../reducers'
-import { useId } from '../hooks/useId'
+import { useAttribute } from '../hooks/useAttribute'
 import { AttributesList } from './AttributesList'
+import { SettingProps } from '../types'
 
-type ComponentSelectionSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const ComponentSelectionSetting = ({
+export const ComponentSelectionSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: ComponentSelectionSettingProps) => {
-  const { dispatch } = useData()
+}) => {
+  const { dispatch } = useStore()
   const [isOpen, setOpen] = useState(false)
-  const { id, value, data } = useId({ parentId, key })
+  const { id, value, data } = useAttribute({ parentId, key })
   const { attributes } = config[key]
 
   useEffect(() => {

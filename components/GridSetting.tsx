@@ -7,21 +7,20 @@ import {
   Text,
   Badge,
 } from '@chakra-ui/core'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
 import { ActionType } from '../reducers'
-import { useId } from '../hooks/useId'
+import { useAttribute } from '../hooks/useAttribute'
 import { ColumnSetting } from './ColumnSetting'
+import { SettingProps } from '../types'
 
-type GridSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const GridSetting = ({ parentId, attribute: key }: GridSettingProps) => {
-  const { dispatch } = useData()
+export const GridSetting: React.FC<SettingProps> = ({
+  parentId,
+  attribute: key,
+}) => {
+  const { dispatch } = useStore()
   const [isOpen, setOpen] = useState(false)
-  const { id, data } = useId({ parentId, key })
+  const { id, data } = useAttribute({ parentId, key })
   const { attributes } = config[key]
 
   return (

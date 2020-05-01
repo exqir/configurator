@@ -1,22 +1,17 @@
 import React, { useState } from 'react'
 import { Stack, FormLabel, IconButton } from '@chakra-ui/core'
-import { useId } from '../hooks/useId'
-import { Key, config } from '../lib/config'
-import { useData } from '../lib/DataContext'
+import { useAttribute } from '../hooks/useAttribute'
+import { useStore } from '../context/StoreContext'
 import { ActionType } from '../reducers'
 import { AttributesList } from './AttributesList'
+import { SettingProps } from '../types'
 
-type ComponentSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const ComponentSetting = ({
+export const ComponentSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: ComponentSettingProps) => {
-  const { dispatch } = useData()
-  const { id } = useId({ parentId, key })
+}) => {
+  const { dispatch } = useStore()
+  const { id } = useAttribute({ parentId, key })
   const [isEdit, setEdit] = useState(false)
 
   const htmlId = `${parentId}-${key}`

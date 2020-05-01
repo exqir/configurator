@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Box, Stack, Button, Text, IconButton } from '@chakra-ui/core'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { AttributesList } from './AttributesList'
 
 export const ColumnSetting = ({ id, ...rest }) => {
-  const { store } = useData()
+  const { store } = useStore()
   const { key } = store[id]
   const [isEdit, setEdit] = useState(false)
 

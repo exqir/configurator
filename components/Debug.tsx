@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { Box, Stack, Button, Text, IconButton } from '@chakra-ui/core'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 
 export const Debug = () => {
-  const { store } = useData()
+  const { store } = useStore()
   const [isVisible, setVisibility] = useState(false)
 
   return (

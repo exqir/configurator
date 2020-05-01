@@ -1,14 +1,6 @@
-import React, { Fragment } from 'react'
-import {
-  Accordion,
-  AccordionItem,
-  AccordionHeader,
-  AccordionPanel,
-  Stack,
-} from '@chakra-ui/core'
+import React from 'react'
 import { DataType } from '../reducers'
 import { CheckboxSetting } from './CheckboxSetting'
-import { AttributesList } from './AttributesList'
 import { GridSetting } from './GridSetting'
 import { NumberSetting } from './NumberSetting'
 import { SelectSetting } from './SelectSetting'
@@ -16,7 +8,8 @@ import { ComponentSelectionSetting } from './ComponentSelectionSetting'
 import { ComponentLinkSetting } from './ComponentLinkSetting'
 import { ComponentSetting } from './ComponentSetting'
 import { ColumnSetting } from './ColumnSetting'
-import { useId } from '../hooks/useId'
+import { useAttribute } from '../hooks/useAttribute'
+import { SettingProps } from '../types'
 
 const Settings = {
   [DataType.SELECT]: SelectSetting,
@@ -29,8 +22,11 @@ const Settings = {
   [DataType.COMPONENT]: ComponentSetting,
 }
 
-export const AttributeSetting = ({ parentId, attribute: key }) => {
-  const { type } = useId({ parentId, key })
+export const AttributeSetting: React.FC<SettingProps> = ({
+  parentId,
+  attribute: key,
+}) => {
+  const { type } = useAttribute({ parentId, key })
 
   const Setting = Settings[type]
 

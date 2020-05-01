@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from 'react'
 import { Stack, FormLabel, IconButton } from '@chakra-ui/core'
-import { useDispatch } from '../hooks/useDispatch'
-import { useId } from '../hooks/useId'
+import { useAttribute } from '../hooks/useAttribute'
 import { Key, config } from '../lib/config'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { ActionType } from '../reducers'
 import { AttributesList } from './AttributesList'
+import { SettingProps } from '../types'
 
-type ComponentLinkSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const ComponentLinkSetting = ({
+export const ComponentLinkSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: ComponentLinkSettingProps) => {
-  const { dispatch } = useData()
+}) => {
+  const { dispatch } = useStore()
   const {
     attributes: [linkedComponent],
   } = config[key]
-  const { id } = useId({ parentId, key })
+  const { id } = useAttribute({ parentId, key })
   const [isEdit, setEdit] = useState(false)
 
   const htmlId = `${parentId}-${key}`
@@ -54,9 +49,12 @@ export const ComponentLinkSetting = ({
   )
 }
 
-const ComponentSetting = ({ parentId, attribute: key }) => {
-  const { dispatch } = useData()
-  const { id } = useId({ parentId, key })
+const ComponentSetting: React.FC<SettingProps> = ({
+  parentId,
+  attribute: key,
+}) => {
+  const { dispatch } = useStore()
+  const { id } = useAttribute({ parentId, key })
 
   useEffect(() => {
     if (!id) {

@@ -13,7 +13,7 @@ import {
   Accordion,
   SimpleGrid,
 } from '@chakra-ui/core'
-import { DataProvider } from '../lib/DataContext'
+import { StoreProvider } from '../context/StoreContext'
 import { AddType } from '../components/AddType'
 import { config, Key } from '../lib/config'
 import { ActionType, DataType, Reducer, reducer } from '../reducers'
@@ -38,12 +38,13 @@ const Home = () => {
       </Head>
       <ThemeProvider>
         <CSSReset />
-        <DataProvider value={{ store, dispatch }}>
+        <StoreProvider value={{ store, dispatch }}>
           <main>
             <Grid
               templateColumns="repeat(2, 1fr)"
               templateRows="2rem 1fr"
               gap={4}
+              w="100%"
             >
               <Box gridArea="1 / 1 / 2 / 3">
                 <ButtonGroup>
@@ -108,7 +109,7 @@ const Home = () => {
               </Box>
             </Grid>
           </main>
-        </DataProvider>
+        </StoreProvider>
       </ThemeProvider>
 
       <style jsx>{`

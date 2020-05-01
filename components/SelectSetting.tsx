@@ -1,20 +1,16 @@
 import React from 'react'
 import { Stack, FormLabel, Select } from '@chakra-ui/core'
-import { useDispatch } from '../hooks/useDispatch'
-import { useId } from '../hooks/useId'
+import { useUpdateOrAdd } from '../hooks/useUpdateOrAdd'
+import { useAttribute } from '../hooks/useAttribute'
 import { config, Key } from '../lib/config'
+import { SettingProps } from '../types'
 
-type SelectSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const SelectSetting = ({
+export const SelectSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: SelectSettingProps) => {
-  const { value } = useId({ parentId, key })
-  const changeHandler = useDispatch({ parentId, key })
+}) => {
+  const { value } = useAttribute({ parentId, key })
+  const changeHandler = useUpdateOrAdd({ parentId, key })
   const { attributes } = config[key]
 
   const htmlId = `${parentId}-${key}`

@@ -8,21 +8,17 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
 } from '@chakra-ui/core'
-import { useDispatch } from '../hooks/useDispatch'
-import { useId } from '../hooks/useId'
-import { Key, config } from '../lib/config'
+import { useUpdateOrAdd } from '../hooks/useUpdateOrAdd'
+import { useAttribute } from '../hooks/useAttribute'
+import { config } from '../lib/config'
+import { SettingProps } from '../types'
 
-type NumberSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const NumberSetting = ({
+export const NumberSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: NumberSettingProps) => {
-  const { value } = useId({ parentId, key })
-  const changeHandler = useDispatch({ parentId, key })
+}) => {
+  const { value } = useAttribute({ parentId, key })
+  const changeHandler = useUpdateOrAdd({ parentId, key })
   const { attributes } = config[key]
 
   const htmlId = `${parentId}-${key}`

@@ -1,9 +1,9 @@
 import React from 'react'
-import { useData } from '../lib/DataContext'
+import { useStore } from '../context/StoreContext'
 import { walkStore } from '../lib/walkStore'
 
 export const Config = () => {
-  const { store } = useData()
+  const { store } = useStore()
 
   return (
     <pre className="card">

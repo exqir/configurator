@@ -1,20 +1,15 @@
 import React from 'react'
 import { Stack, FormLabel, Checkbox } from '@chakra-ui/core'
-import { useDispatch } from '../hooks/useDispatch'
-import { useId } from '../hooks/useId'
-import { Key } from '../lib/config'
+import { useUpdateOrAdd } from '../hooks/useUpdateOrAdd'
+import { useAttribute } from '../hooks/useAttribute'
+import { SettingProps } from '../types'
 
-type CheckboxSettingProps = {
-  parentId: string
-  attribute: Key
-}
-
-export const CheckboxSetting = ({
+export const CheckboxSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
-}: CheckboxSettingProps) => {
-  const { value } = useId({ parentId, key })
-  const changeHandler = useDispatch({ parentId, key })
+}) => {
+  const { value } = useAttribute({ parentId, key })
+  const changeHandler = useUpdateOrAdd({ parentId, key })
 
   const htmlId = `${parentId}-${key}`
   return (
