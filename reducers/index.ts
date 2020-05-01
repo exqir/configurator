@@ -21,23 +21,32 @@ export enum DataType {
   CHECKBOX = 'CHECKBOX',
 }
 
-export type Action = {
-  type: ActionType
-  payload: {
-    parentId?: string
-    id?: string
-    key?: Key
-    key2?: Key
-    value?: string | number | boolean
-  }
-}
+type Value = string | number | boolean
+
+export type Action =
+  | {
+      type: ActionType.ADD_DATALINK_EVENT
+      payload: { parentId: string; key: Key; value?: Value }
+    }
+  | {
+      type: ActionType.REMOVE_DATALINK_EVENT
+      payload: { parentId: string; id: string }
+    }
+  | {
+      type: ActionType.UPDATE_VALUE_EVENT
+      payload: { id: string; value: Value }
+    }
+  | {
+      type: ActionType.REPLACE_DATALINK_EVENT
+      payload: { parentId: string; key: Key }
+    }
 
 export type ModuleStore = {
   [id: string]: {
     id: string
     key: Key
     type: DataType
-    value?: string | boolean | number
+    value?: Value
     data: string[]
   }
 }
@@ -46,11 +55,11 @@ export type Reducer = (prevState: ModuleStore, action: Action) => ModuleStore
 
 export const generateId = (key: string) => `${key}-${generate()}`
 
-export const reducer: Reducer = (prevState, { type, payload }) => {
+export const reducer: Reducer = (prevState, action) => {
   console.log(prevState)
-  switch (type) {
+  switch (action.type) {
     case ActionType.ADD_DATALINK_EVENT: {
-      const { parentId, key, value } = payload
+      const { parentId, key, value } = action.payload
       const { data, ...parent } = prevState[parentId]
       const { attributes: _, ...initialValue } = config[key]
       const id = generateId(key)
@@ -64,7 +73,7 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
       }
     }
     case ActionType.REMOVE_DATALINK_EVENT: {
-      const { parentId, id } = payload
+      const { parentId, id } = action.payload
       const { [id]: removed, ...newState } = prevState
       const { data, ...parent } = prevState[parentId]
       return {
@@ -76,7 +85,7 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
       }
     }
     case ActionType.UPDATE_VALUE_EVENT: {
-      const { id, value } = payload
+      const { id, value } = action.payload
       return {
         ...prevState,
         [id]: {
@@ -86,7 +95,7 @@ export const reducer: Reducer = (prevState, { type, payload }) => {
       }
     }
     case ActionType.REPLACE_DATALINK_EVENT: {
-      const { parentId, key } = payload
+      const { parentId, key } = action.payload
       const { data, ...parent } = prevState[parentId]
       const { [data[0]]: removed, ...newState } = prevState
       const { attributes: _, ...initialValue } = config[key]
