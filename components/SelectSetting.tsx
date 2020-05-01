@@ -4,6 +4,7 @@ import { useUpdateOrAdd } from '../hooks/useUpdateOrAdd'
 import { useAttribute } from '../hooks/useAttribute'
 import { config, Key } from '../lib/config'
 import { SettingProps } from '../types'
+import { Label } from './Label'
 
 export const SelectSetting: React.FC<SettingProps> = ({
   parentId,
@@ -16,8 +17,11 @@ export const SelectSetting: React.FC<SettingProps> = ({
   const htmlId = `${parentId}-${key}`
   return (
     <Stack isInline justify="space-between" align="center">
-      <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+      <Label>
+        <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+      </Label>
       <Select
+        maxWidth="50%"
         id={htmlId}
         name={`${htmlId}-values`}
         onChange={(event) => changeHandler(event.target.value)}

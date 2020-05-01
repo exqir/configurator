@@ -5,6 +5,7 @@ import { useStore } from '../context/StoreContext'
 import { ActionType } from '../reducers'
 import { AttributesList } from './AttributesList'
 import { SettingProps } from '../types'
+import { Label } from './Label'
 
 export const ComponentSetting: React.FC<SettingProps> = ({
   parentId,
@@ -16,9 +17,11 @@ export const ComponentSetting: React.FC<SettingProps> = ({
 
   const htmlId = `${parentId}-${key}`
   return (
-    <Stack spacing={1}>
+    <Stack spacing={2}>
       <Stack isInline justify="space-between" align="center">
-        <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+        <Label type="Component">
+          <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+        </Label>
         <IconButton
           size="sm"
           icon={isEdit ? 'check' : 'edit'}

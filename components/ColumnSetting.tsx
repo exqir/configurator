@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
-import { Box, Stack, Button, Text, IconButton } from '@chakra-ui/core'
+import { Box, Stack, Text, IconButton } from '@chakra-ui/core'
 import { useStore } from '../context/StoreContext'
 import { AttributesList } from './AttributesList'
+import { Label } from './Label'
 
 export const ColumnSetting = ({ id, ...rest }) => {
   const { store } = useStore()
@@ -9,9 +10,11 @@ export const ColumnSetting = ({ id, ...rest }) => {
   const [isEdit, setEdit] = useState(false)
 
   return (
-    <Box borderWidth="1px" rounded="lg" p={2} {...rest}>
-      <Stack isInline justify="space-between" align="center">
-        <Text>{key}</Text>
+    <Box borderWidth={1} rounded="lg" overflow="hidden" {...rest}>
+      <Stack isInline justify="space-between" align="center" p={2} bg="gray.50">
+        <Label type="Column">
+          <Text>{key}</Text>
+        </Label>
         <IconButton
           size="sm"
           icon={isEdit ? 'check' : 'edit'}
@@ -20,7 +23,7 @@ export const ColumnSetting = ({ id, ...rest }) => {
         />
       </Stack>
       {isEdit && (
-        <Box p={1}>
+        <Box p={2}>
           <AttributesList id={id} />
         </Box>
       )}

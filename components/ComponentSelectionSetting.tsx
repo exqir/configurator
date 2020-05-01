@@ -1,11 +1,12 @@
 import React, { useState, useEffect, Fragment } from 'react'
-import { Stack, SimpleGrid, Button, IconButton, Text } from '@chakra-ui/core'
+import { Stack, IconButton, Text, RadioGroup, Radio } from '@chakra-ui/core'
 import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
 import { ActionType } from '../reducers'
 import { useAttribute } from '../hooks/useAttribute'
 import { AttributesList } from './AttributesList'
 import { SettingProps } from '../types'
+import { Label } from './Label'
 
 export const ComponentSelectionSetting: React.FC<SettingProps> = ({
   parentId,
@@ -28,7 +29,9 @@ export const ComponentSelectionSetting: React.FC<SettingProps> = ({
   return (
     <Stack spacing={1}>
       <Stack isInline justify="space-between" align="center">
-        <Text>{key}</Text>
+        <Label type="Component">
+          <Text>{key}</Text>
+        </Label>
         <IconButton
           size="sm"
           icon={isOpen ? 'check' : 'edit'}
@@ -47,21 +50,23 @@ export const ComponentSelectionSetting: React.FC<SettingProps> = ({
       </Stack>
       {isOpen && (
         <Fragment>
-          <SimpleGrid columns={2} spacing={4}>
+          <RadioGroup
+            defaultValue={value}
+            isInline
+            spacing={2}
+            onChange={(event) => {
+              dispatch({
+                type: ActionType.UPDATE_VALUE_EVENT,
+                payload: { id, value: event.target.value },
+              })
+            }}
+          >
             {(attributes as readonly Key[]).map((column) => (
-              <Button
-                key={column}
-                onClick={() => {
-                  dispatch({
-                    type: ActionType.UPDATE_VALUE_EVENT,
-                    payload: { id, value: column },
-                  })
-                }}
-              >
+              <Radio key={column} value={column}>
                 {column}
-              </Button>
+              </Radio>
             ))}
-          </SimpleGrid>
+          </RadioGroup>
           {data.map((componentId) => (
             <AttributesList key={componentId} id={componentId} />
           ))}

@@ -12,6 +12,7 @@ import {
   ButtonGroup,
   Accordion,
   SimpleGrid,
+  Badge,
 } from '@chakra-ui/core'
 import { StoreProvider } from '../context/StoreContext'
 import { AddType } from '../components/AddType'
@@ -88,16 +89,23 @@ const Home = () => {
                     <Heading as="h2" size="md">
                       Modules:
                     </Heading>
-                    <Accordion>
-                      {store.root.data.map((dataId) => (
-                        <Fragment key={dataId}>
+                    {store.root.data.map((dataId) => (
+                      <Fragment key={dataId}>
+                        <Stack isInline spacing={2}>
                           <Heading as="h5" size="sm">
                             {store[dataId].key}
                           </Heading>
+                          <Badge>Module</Badge>
+                        </Stack>
+                        <Box
+                          borderLeftWidth={5}
+                          borderLeftColor="gray.500"
+                          paddingLeft={2}
+                        >
                           <AttributesList id={dataId} />
-                        </Fragment>
-                      ))}
-                    </Accordion>
+                        </Box>
+                      </Fragment>
+                    ))}
                   </SimpleGrid>
                 </section>
               </Box>
@@ -162,17 +170,6 @@ const Home = () => {
         .card:focus,
         .card:active {
           border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
         }
 
         pre {

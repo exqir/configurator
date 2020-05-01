@@ -12,6 +12,7 @@ import { useUpdateOrAdd } from '../hooks/useUpdateOrAdd'
 import { useAttribute } from '../hooks/useAttribute'
 import { config } from '../lib/config'
 import { SettingProps } from '../types'
+import { Label } from './Label'
 
 export const NumberSetting: React.FC<SettingProps> = ({
   parentId,
@@ -24,8 +25,11 @@ export const NumberSetting: React.FC<SettingProps> = ({
   const htmlId = `${parentId}-${key}`
   return (
     <Stack isInline justify="space-between" align="center">
-      <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+      <Label>
+        <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+      </Label>
       <NumberInput
+        maxWidth="50%"
         id={htmlId}
         value={value as number}
         min={attributes[0] as number}

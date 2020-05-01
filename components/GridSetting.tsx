@@ -13,6 +13,7 @@ import { ActionType } from '../reducers'
 import { useAttribute } from '../hooks/useAttribute'
 import { ColumnSetting } from './ColumnSetting'
 import { SettingProps } from '../types'
+import { Label } from './Label'
 
 export const GridSetting: React.FC<SettingProps> = ({
   parentId,
@@ -26,8 +27,10 @@ export const GridSetting: React.FC<SettingProps> = ({
   return (
     <Stack spacing={1}>
       <Stack isInline justify="space-between" align="center">
-        <Text>{key}</Text>
-        {data.length > 0 && <Badge>{data.length}</Badge>}
+        <Label type="Grid">
+          <Text>{key}</Text>
+          {data.length > 0 && <Badge>{data.length}</Badge>}
+        </Label>
         <IconButton
           size="sm"
           icon={isOpen ? 'close' : 'add'}
