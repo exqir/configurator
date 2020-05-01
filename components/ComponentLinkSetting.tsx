@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Stack, FormLabel, IconButton } from '@chakra-ui/core'
+import { Stack, FormLabel, IconButton, Box } from '@chakra-ui/core'
 import { useAttribute } from '../hooks/useAttribute'
 import { Key, config } from '../lib/config'
 import { useStore } from '../context/StoreContext'
@@ -21,8 +21,8 @@ export const ComponentLinkSetting: React.FC<SettingProps> = ({
 
   const htmlId = `${parentId}-${key}`
   return (
-    <Stack spacing={1}>
-      <Stack isInline justify="space-between" align="center">
+    <Stack spacing={1} borderWidth={1} rounded="lg" overflow="hidden">
+      <Stack isInline justify="space-between" align="center" p={2} bg="gray.50">
         <Label type="Component">
           <FormLabel htmlFor={htmlId}>{key}</FormLabel>
         </Label>
@@ -42,11 +42,13 @@ export const ComponentLinkSetting: React.FC<SettingProps> = ({
         />
       </Stack>
       {id && isEdit && (
-        <ComponentSetting
-          key={id}
-          parentId={id}
-          attribute={linkedComponent as Key}
-        />
+        <Box p={2}>
+          <ComponentSetting
+            key={id}
+            parentId={id}
+            attribute={linkedComponent as Key}
+          />
+        </Box>
       )}
     </Stack>
   )

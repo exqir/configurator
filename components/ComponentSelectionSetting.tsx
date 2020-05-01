@@ -1,5 +1,12 @@
 import React, { useState, useEffect, Fragment } from 'react'
-import { Stack, IconButton, Text, RadioGroup, Radio } from '@chakra-ui/core'
+import {
+  Stack,
+  IconButton,
+  Text,
+  RadioGroup,
+  Radio,
+  Box,
+} from '@chakra-ui/core'
 import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
 import { ActionType } from '../reducers'
@@ -27,8 +34,8 @@ export const ComponentSelectionSetting: React.FC<SettingProps> = ({
   }, [id, value])
 
   return (
-    <Stack spacing={1}>
-      <Stack isInline justify="space-between" align="center">
+    <Stack spacing={1} borderWidth={1} rounded="lg" overflow="hidden">
+      <Stack isInline justify="space-between" align="center" p={2} bg="gray.50">
         <Label type="Component">
           <Text>{key}</Text>
         </Label>
@@ -49,7 +56,7 @@ export const ComponentSelectionSetting: React.FC<SettingProps> = ({
         />
       </Stack>
       {isOpen && (
-        <Fragment>
+        <Box p={2}>
           <RadioGroup
             defaultValue={value}
             isInline
@@ -70,7 +77,7 @@ export const ComponentSelectionSetting: React.FC<SettingProps> = ({
           {data.map((componentId) => (
             <AttributesList key={componentId} id={componentId} />
           ))}
-        </Fragment>
+        </Box>
       )}
     </Stack>
   )
