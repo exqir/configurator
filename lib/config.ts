@@ -42,17 +42,28 @@ export const config = {
   cartColumns: {
     key: 'cartColumns',
     type: DataType.GRID,
+    attributes: ['column'],
+  },
+  column: {
+    key: 'column',
+    type: DataType.COLUMN,
+    attributes: ['width', 'justify', 'column_type'],
+  },
+  column_type: {
+    key: 'column_type',
+    type: DataType.COLUMN_SELECTION,
+    value: 'quantity',
     attributes: ['quantity', 'cart_actions'],
   },
   quantity: {
     key: 'quantity',
-    type: DataType.COLUMN,
-    attributes: ['width', 'justify', 'qty_selection'],
+    type: DataType.COLUMN_TYPE,
+    attributes: ['qty_selection'],
   },
   cart_actions: {
     key: 'cart_actions',
-    type: DataType.COLUMN,
-    attributes: ['width', 'justify'],
+    type: DataType.COLUMN_TYPE,
+    attributes: [],
   },
   width: {
     key: 'width',

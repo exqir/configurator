@@ -8,6 +8,7 @@ import { ComponentSelectionSetting } from './ComponentSelectionSetting'
 import { ComponentLinkSetting } from './ComponentLinkSetting'
 import { ComponentSetting } from './ComponentSetting'
 import { ColumnSetting } from './ColumnSetting'
+import { ColumnSelectionSetting } from './ColumnSelectionSetting'
 import { useAttribute } from '../hooks/useAttribute'
 import { SettingProps } from '../types'
 
@@ -17,6 +18,8 @@ const Settings = {
   [DataType.CHECKBOX]: CheckboxSetting,
   [DataType.GRID]: GridSetting,
   [DataType.COLUMN]: ColumnSetting,
+  [DataType.COLUMN_SELECTION]: ColumnSelectionSetting,
+  [DataType.COLUMN_TYPE]: ComponentSetting,
   [DataType.COMPONENT_SELECTION]: ComponentSelectionSetting,
   [DataType.COMPONENT_LINK]: ComponentLinkSetting,
   [DataType.COMPONENT]: ComponentSetting,

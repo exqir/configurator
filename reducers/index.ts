@@ -13,6 +13,8 @@ export enum DataType {
   MODULE = 'MODULE',
   GRID = 'GRID',
   COLUMN = 'COLUMN',
+  COLUMN_SELECTION = 'COLUMN_SELECTION',
+  COLUMN_TYPE = 'COLUMN_TYPE',
   COMPONENT_SELECTION = 'COMPONENT_SELECTIN',
   COMPONENT_LINK = 'COMPONENT_LINK',
   COMPONENT = 'COMPONENT',
@@ -69,7 +71,12 @@ export const reducer: Reducer = (prevState, action) => {
           ...parent,
           data: [...data, id],
         },
-        [id]: { ...initialValue, ...(value ? { value } : {}), id, data: [] },
+        [id]: {
+          ...initialValue,
+          ...(value !== undefined ? { value } : {}),
+          id,
+          data: [],
+        },
       }
     }
     case ActionType.REMOVE_DATALINK_EVENT: {
