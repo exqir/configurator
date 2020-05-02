@@ -51,6 +51,7 @@ export const config = {
   },
   column_type: {
     key: 'column_type',
+    name: 'type',
     type: DataType.COLUMN_SELECTION,
     value: 'quantity',
     attributes: ['quantity', 'cart_actions'],
@@ -95,12 +96,14 @@ export const config = {
   },
   component_type: {
     key: 'component_type',
+    name: 'type',
     type: DataType.SELECT,
     value: 'primary',
     attributes: ['primary', 'secondary', 'success', 'danger'],
   },
   select_variants: {
     key: 'select_variants',
+    name: 'variant',
     type: DataType.SELECT,
     value: 'outlined',
     attributes: ['outlined', 'underlined'],

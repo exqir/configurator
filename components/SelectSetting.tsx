@@ -10,7 +10,7 @@ export const SelectSetting: React.FC<SettingProps> = ({
   parentId,
   attribute: key,
 }) => {
-  const { value } = useAttribute({ parentId, key })
+  const { value, name } = useAttribute({ parentId, key })
   const changeHandler = useUpdateOrAdd({ parentId, key })
   const { attributes } = config[key]
 
@@ -18,7 +18,7 @@ export const SelectSetting: React.FC<SettingProps> = ({
   return (
     <Stack isInline justify="space-between" align="center">
       <Label>
-        <FormLabel htmlFor={htmlId}>{key}</FormLabel>
+        <FormLabel htmlFor={htmlId}>{name ?? key}</FormLabel>
       </Label>
       <Select
         maxWidth="50%"

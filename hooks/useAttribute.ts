@@ -12,7 +12,7 @@ export const useAttribute = ({
   const { data: links } = store[parentId]
   const id = links.find((dataId) => store[dataId].key === key)
   // @ts-ignore
-  const { type, value, data = [] } = id ? store[id] : config[key]
+  const { type, value, name, data = [] } = id ? store[id] : config[key]
 
-  return { id, type, value, data }
+  return { id, type, value, name, data }
 }

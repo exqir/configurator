@@ -48,6 +48,7 @@ export type ModuleStore = {
     id: string
     key: Key
     type: DataType
+    name?: string
     value?: Value
     data: string[]
   }
