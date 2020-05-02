@@ -11,12 +11,13 @@ export const useUpdateOrAdd = ({
 }) => {
   const { store, dispatch } = useStore()
 
-  const linkId = store[parentId].data.find(
-    (linkId) => store[linkId].key === key,
-  )
+  const getLinkId = () =>
+    store[parentId].data.find((linkId) => store[linkId].key === key)
 
-  return (value: string | boolean | number) =>
-    linkId
+  return (value: string | boolean | number) => {
+    const linkId = getLinkId()
+
+    return linkId
       ? dispatch({
           type: ActionType.UPDATE_VALUE_EVENT,
           payload: { id: linkId, value },
@@ -25,4 +26,5 @@ export const useUpdateOrAdd = ({
           type: ActionType.ADD_DATALINK_EVENT,
           payload: { parentId, key, value },
         })
+  }
 }
