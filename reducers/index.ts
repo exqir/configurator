@@ -6,6 +6,7 @@ export enum ActionType {
   REMOVE_DATALINK_EVENT,
   UPDATE_VALUE_EVENT,
   REPLACE_DATALINK_EVENT,
+  CHANGE_DATALINK_ORDER_EVENT,
 }
 
 export enum DataType {
@@ -42,6 +43,10 @@ export type Action =
       type: ActionType.REPLACE_DATALINK_EVENT
       payload: { parentId: string; key: Key }
     }
+  | {
+      type: ActionType.CHANGE_DATALINK_ORDER_EVENT
+      payload: { parentId: string; startIndex: number; endIndex: number }
+    }
 
 export type ModuleStore = {
   [id: string]: {
@@ -59,7 +64,6 @@ export type Reducer = (prevState: ModuleStore, action: Action) => ModuleStore
 export const generateId = (key: string) => `${key}-${generate()}`
 
 export const reducer: Reducer = (prevState, action) => {
-  console.log(prevState)
   switch (action.type) {
     case ActionType.ADD_DATALINK_EVENT: {
       const { parentId, key, value } = action.payload
@@ -115,6 +119,21 @@ export const reducer: Reducer = (prevState, action) => {
           data: [id],
         },
         [id]: { ...initialValue, id, data: [] },
+      }
+    }
+    case ActionType.CHANGE_DATALINK_ORDER_EVENT: {
+      const { parentId, startIndex, endIndex } = action.payload
+      const { data, ...parent } = prevState[parentId]
+      const result = Array.from(data)
+      const [removed] = result.splice(startIndex, 1)
+      result.splice(endIndex, 0, removed)
+
+      return {
+        ...prevState,
+        [parentId]: {
+          ...parent,
+          data: result,
+        },
       }
     }
     default:

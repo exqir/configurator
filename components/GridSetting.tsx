@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react'
+import React, { useState, Fragment, forwardRef } from 'react'
 import {
   Stack,
   Button,
@@ -8,6 +8,7 @@ import {
   Grid,
   Icon,
 } from '@chakra-ui/core'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
 import { ActionType } from '../reducers'
@@ -51,31 +52,68 @@ export const GridSetting: React.FC<SettingProps> = ({
       </Stack>
       {isOpen && (
         <Stack spacing={1}>
-          <Grid templateColumns="repeat(12, 1fr)" gap={2}>
-            {data.map((columnId) => (
-              <Column
-                key={columnId}
-                id={columnId}
-                isActive={active === columnId}
-                onClick={() => {
-                  setActive(active === columnId ? null : columnId)
-                }}
-              />
-            ))}
-            <IconButton
-              gridColumn="auto / span 1"
-              size="sm"
-              icon="add"
-              aria-label="Add column"
-              variant="outline"
-              onClick={() => {
-                dispatch({
-                  type: ActionType.ADD_DATALINK_EVENT,
-                  payload: { parentId: id, key: attributes[0] as Key },
-                })
-              }}
-            />
-          </Grid>
+          <DragDropContext
+            onDragEnd={(result) => {
+              if (!result.destination) {
+                return
+              }
+              dispatch({
+                type: ActionType.CHANGE_DATALINK_ORDER_EVENT,
+                payload: {
+                  parentId: id,
+                  startIndex: result.source.index,
+                  endIndex: result.destination.index,
+                },
+              })
+            }}
+          >
+            <Droppable droppableId="droppable" direction="horizontal">
+              {(provided, snapshot) => (
+                <Grid
+                  templateColumns="repeat(12, 1fr)"
+                  gap={2}
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {data.map((columnId, index) => (
+                    <Draggable
+                      key={columnId}
+                      draggableId={columnId}
+                      index={index}
+                      disableInteractiveElementBlocking
+                    >
+                      {(provided, snapshot) => (
+                        <Column
+                          ref={provided.innerRef}
+                          {...provided.dragHandleProps}
+                          {...provided.draggableProps}
+                          id={columnId}
+                          isActive={active === columnId}
+                          onClick={() => {
+                            setActive(active === columnId ? null : columnId)
+                          }}
+                        />
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                  <IconButton
+                    gridColumn="auto / span 1"
+                    size="sm"
+                    icon="add"
+                    aria-label="Add column"
+                    variant="outline"
+                    onClick={() => {
+                      dispatch({
+                        type: ActionType.ADD_DATALINK_EVENT,
+                        payload: { parentId: id, key: attributes[0] as Key },
+                      })
+                    }}
+                  />
+                </Grid>
+              )}
+            </Droppable>
+          </DragDropContext>
           {active && <ColumnSetting key={active} id={active} />}
         </Stack>
       )}
@@ -83,7 +121,10 @@ export const GridSetting: React.FC<SettingProps> = ({
   )
 }
 
-const Column = ({ id, isActive, onClick, ...rest }) => {
+const Column = forwardRef<
+  any,
+  { id: string; isActive: boolean; onClick: () => void }
+>(({ id, isActive, onClick, ...rest }, ref) => {
   const { store } = useStore()
   const { data } = store[id]
 
@@ -95,6 +136,7 @@ const Column = ({ id, isActive, onClick, ...rest }) => {
   const type = store[typeId]?.value
   return (
     <Button
+      ref={ref}
       size="sm"
       variant={isActive ? 'solid' : 'outline'}
       onClick={onClick}
@@ -105,4 +147,4 @@ const Column = ({ id, isActive, onClick, ...rest }) => {
       <Text isTruncated>{type}</Text>
     </Button>
   )
-}
+})

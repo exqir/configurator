@@ -8,7 +8,6 @@ export const AttributesList = ({ id, ...rest }) => {
   const { store } = useStore()
   const { key } = store[id]
   const { attributes } = config[key]
-  console.log('AttributesList', id, key)
   return (
     <Stack spacing={2} {...rest}>
       {(attributes as readonly Key[]).map((attribute, index) => {
