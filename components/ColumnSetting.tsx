@@ -10,6 +10,10 @@ export const ColumnSetting = ({ id, ...rest }) => {
 
   const widthId = data.find((attributeId) => store[attributeId].key === 'width')
   const width = store[widthId]?.value
+  const typeId = data.find(
+    (attributeId) => store[attributeId].key === 'column_type',
+  )
+  const type = store[typeId]?.value
 
   return (
     <Box
@@ -21,7 +25,7 @@ export const ColumnSetting = ({ id, ...rest }) => {
     >
       <Stack isInline justify="space-between" align="center" p={2} bg="gray.50">
         <Label type="Column">
-          <Text>{key}</Text>
+          <Text>{type ?? key}</Text>
         </Label>
       </Stack>
       {

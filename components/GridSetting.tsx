@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, Fragment } from 'react'
 import {
   Stack,
   Button,
@@ -6,7 +6,7 @@ import {
   Text,
   Badge,
   Grid,
-  Box,
+  Icon,
 } from '@chakra-ui/core'
 import { useStore } from '../context/StoreContext'
 import { config, Key } from '../lib/config'
@@ -50,35 +50,35 @@ export const GridSetting: React.FC<SettingProps> = ({
         />
       </Stack>
       {isOpen && (
-        <Grid templateColumns="repeat(12, 1fr)" gap={2}>
-          {data.map((columnId) => (
-            <Column
-              key={columnId}
-              id={columnId}
-              isActive={active === columnId}
+        <Stack spacing={1}>
+          <Grid templateColumns="repeat(12, 1fr)" gap={2}>
+            {data.map((columnId) => (
+              <Column
+                key={columnId}
+                id={columnId}
+                isActive={active === columnId}
+                onClick={() => {
+                  setActive(active === columnId ? null : columnId)
+                }}
+              />
+            ))}
+            <IconButton
+              gridColumn="auto / span 1"
+              size="sm"
+              icon="add"
+              aria-label="Add column"
+              variant="outline"
               onClick={() => {
-                setActive(active === columnId ? null : columnId)
+                dispatch({
+                  type: ActionType.ADD_DATALINK_EVENT,
+                  payload: { parentId: id, key: attributes[0] as Key },
+                })
               }}
             />
-          ))}
-          <IconButton
-            gridColumn="auto / span 1"
-            size="sm"
-            icon="add"
-            aria-label="Add column"
-            variant="outline"
-            onClick={() => {
-              dispatch({
-                type: ActionType.ADD_DATALINK_EVENT,
-                payload: { parentId: id, key: attributes[0] as Key },
-              })
-            }}
-          />
-        </Grid>
+          </Grid>
+          {active && <ColumnSetting key={active} id={active} />}
+        </Stack>
       )}
-      <Stack spacing={1}>
-        {active && <ColumnSetting key={active} id={active} />}
-      </Stack>
     </Stack>
   )
 }
@@ -94,22 +94,15 @@ const Column = ({ id, isActive, onClick, ...rest }) => {
   )
   const type = store[typeId]?.value
   return (
-    <Box
-      borderWidth={1}
-      rounded="lg"
-      overflow="hidden"
+    <Button
+      size="sm"
+      variant={isActive ? 'solid' : 'outline'}
+      onClick={onClick}
       gridColumn={`auto / span ${width ?? 1}`}
       {...rest}
     >
-      <Stack isInline align="center">
-        <IconButton
-          size="sm"
-          icon={isActive ? 'check' : 'edit'}
-          aria-label={isActive ? 'Done editing column' : 'Edit column'}
-          onClick={onClick}
-        />
-        <Text isTruncated>{type}</Text>
-      </Stack>
-    </Box>
+      <Icon name="edit" mr={1} />
+      <Text isTruncated>{type}</Text>
+    </Button>
   )
 }
