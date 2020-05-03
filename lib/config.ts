@@ -47,14 +47,14 @@ export const config = {
   column: {
     key: 'column',
     type: DataType.COLUMN,
-    attributes: ['width', 'justify', 'column_type'],
+    attributes: ['width', 'justify', 'align', 'hide_headline', 'column_type'],
   },
   column_type: {
     key: 'column_type',
     name: 'type',
     type: DataType.COLUMN_SELECTION,
     value: 'quantity',
-    attributes: ['quantity', 'cart_actions'],
+    attributes: ['quantity', 'cart_actions', 'product_image'],
   },
   quantity: {
     key: 'quantity',
@@ -65,6 +65,17 @@ export const config = {
     key: 'cart_actions',
     type: DataType.COLUMN_TYPE,
     attributes: [],
+  },
+  product_image: {
+    key: 'product_image',
+    type: DataType.COLUMN_TYPE,
+    attributes: ['size'],
+  },
+  hide_headline: {
+    key: 'hide_headline',
+    type: DataType.CHECKBOX,
+    value: false,
+    attributes: [true, false],
   },
   width: {
     key: 'width',
@@ -77,6 +88,12 @@ export const config = {
     type: DataType.SELECT,
     value: 'left',
     attributes: ['left', 'right', 'center'],
+  },
+  align: {
+    key: 'align',
+    type: DataType.SELECT,
+    value: 'center',
+    attributes: ['top', 'center', 'bottom'],
   },
   qty_selection: {
     key: 'qty_selection',
@@ -128,7 +145,20 @@ export const config = {
   text: {
     key: 'text',
     type: DataType.COMPONENT,
-    attributes: ['component_type'],
+    attributes: ['component_type', 'text_variant'],
+  },
+  text_variant: {
+    key: 'text_variant',
+    name: 'variant',
+    type: DataType.SELECT,
+    value: 'p',
+    attributes: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'],
+  },
+  size: {
+    key: 'size',
+    type: DataType.SELECT,
+    value: 'medium',
+    attributes: ['small', 'medium', 'large'],
   },
 } as const
 
