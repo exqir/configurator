@@ -156,6 +156,7 @@ const Home = () => {
         }
 
         .card {
+          position: relative;
           width: 100%;
           padding: 1.5rem;
           text-align: left;
